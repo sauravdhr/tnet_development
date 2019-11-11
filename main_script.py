@@ -481,7 +481,7 @@ def main():
 	# run_phyloscanner(50)
 	# run_phyloscanner_multithreaded(50)
 	# run_tnet_old_multithreaded()
-	# run_tnet_new_multithreaded()
+	run_tnet_new_multithreaded()
 	# create_tnet_bootstrap_output(10)
 	# create_tnet_bootstrap_output(50)
 	# create_directed_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)

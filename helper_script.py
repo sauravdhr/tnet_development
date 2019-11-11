@@ -183,7 +183,7 @@ def main():
 	# create_raxml_scripts_with_bootstrap(100, 'raxml_scripts')
 	# run_raxml_scripts_with_threading('raxml_scripts')
 	# root_raxml_best_tree()
-	run_tnet_new_besttree_multithreaded(1)
+	run_tnet_new_besttree_multithreaded(100)
 	# run_tnet_old_besttree(1)
 	# run_phyloscanner_besttree()
 	# print_data_summary_()
