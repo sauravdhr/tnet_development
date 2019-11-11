@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from Bio import Phylo
 import numpy as np
 import sys, os
+import argparse
 
 # Global variables
 score = {}
@@ -30,6 +31,7 @@ right_score = {}
 solution_count = {}
 hosts = []
 transmission_edges = []
+flag_best_prob = 1
 
 
 
@@ -53,7 +55,7 @@ def initialize_leaf_nodes(rooted_tree):
 	global hosts
 	hosts = list(set(temp_host))
 	hosts.sort()
-	# print('Total hosts: ', len(hosts), hosts)
+	print('Total hosts: ', len(hosts), hosts)
 
 	for terminal in rooted_tree.get_terminals():
 		temp = []
@@ -120,6 +122,12 @@ def initialize_internal_nodes(rooted_tree):
 		initialize_score_count(nonterminal)
 
 def get_host_from_count(count):
+	if (flag_best_prob == 1):
+		max_count = max(count)
+		for i in range(len(count)):
+			if count[i] != max_count:
+				count[i] = 0
+
 	probs = [float(i)/sum(count) for i in count]
 	ch = np.random.choice(len(probs), p=probs)
 	return hosts[ch]
@@ -133,8 +141,8 @@ def choose_root_host(root_node):
 		else:
 			probs.append(0)
 
-	# print('Root', probs)
-	# print('Root score', score[root_node])
+	print('Root', probs)
+	print('Root score', score[root_node])
 	return get_host_from_count(probs)
 
 def choose_internal_node_host(rooted_tree):
@@ -183,11 +191,18 @@ def write_transmission_edges(file, source, edges):
 	result.close()
 
 def main():
-	if len(sys.argv) == 3:
+	if len(sys.argv) >= 3:
 		INPUT_TREE_FILE = os.path.abspath(sys.argv[1])
 		OUTPUT_FILE = os.path.abspath(sys.argv[2])
 	else:
 		raise IndexError("Usage: python3 tnet.py [input phylogeny file] [desired output file]")
+
+	parser = argparse.ArgumentParser(description='Process some integers.')
+	parser.add_argument("-mp", "--", dest = "hostname", default = "xyz.edu", help="Server name")
+	# parser.add_argument("-db", "--database", dest = "db", default = "ding_dong", help="Database name")
+	# parser.add_argument("-u", "--username",dest ="username", help="User name")
+	# parser.add_argument("-p", "--password",dest = "password", help="Password")
+	# parser.add_argument("-size", "--binsize",dest = "binsize", help="Size", type=int)
 
 	input_tree = initialize_tree(INPUT_TREE_FILE)
 	initialize_leaf_nodes(input_tree)

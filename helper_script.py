@@ -99,7 +99,7 @@ def run_tnet_new_besttree_multithreaded(times = 100):
 			os.mkdir(output_dir)
 
 		tree_file = input_dir + '/RAxML_rootedTree.bestTree.favites'
-		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_new'
+		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_new_max_prob'
 		t.append(threading.Thread(target=ms.run_tnet_new_multiple_times, args=(tree_file, out_file, times)))
 
 	for i in range(len(t)):
@@ -183,10 +183,10 @@ def main():
 	# create_raxml_scripts_with_bootstrap(100, 'raxml_scripts')
 	# run_raxml_scripts_with_threading('raxml_scripts')
 	# root_raxml_best_tree()
-	# run_tnet_new_besttree_multithreaded(1)
+	run_tnet_new_besttree_multithreaded(1)
 	# run_tnet_old_besttree(1)
 	# run_phyloscanner_besttree()
-	print_data_summary_()
+	# print_data_summary_()
 
 	
 

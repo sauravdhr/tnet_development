@@ -259,7 +259,7 @@ def run_tnet_new_multiple_times(input_file, output_file, time = 100):
 	result = open(output_file, 'w+')
 
 	for t in range(time):
-		cmd = 'python3 TNet/tnet_new.py {} {}'.format(input_file, temp_out_file)
+		cmd = 'python3 tnet.py {} {}'.format(input_file, temp_out_file)
 		# print(cmd)
 		os.system(cmd)
 		e_list = []
@@ -453,18 +453,22 @@ def check_and_clean():
 
 	for folder in folders:
 		# print('Inside',folder)
-		check_folder = data_dir + folder
+		check_folder = 'outputs/' + folder + '/tnet_best_tree'
 		if os.path.exists(check_folder):
+			# original = '/home/saurav/research/FAVITES_compare_TNet_v2/outputs/'+ folder +'/tnet_best_tree/bestTree.1.tnet_new'
+			# copy = 'outputs/'+ folder +'/tnet_best_tree/bestTree.1.tnet_new'
+			# if os.path.exists(original):
+			# 	shutil.copy(original, copy)
 			# count += 1
 			file_list = next(os.walk(check_folder))[2]
 			count += len(file_list)
-			check_file = check_folder + '/tnet_new_10_bootstrap'
-			if os.path.exists(check_file):
-				print(folder)
-				# os.remove(check_file)
-				shutil.rmtree(check_folder + '/tnet_new_10_bootstrap')
+			# check_file = check_folder + '/tnet_new_10_bootstrap'
+			# if os.path.exists(check_file):
+			# 	print(folder)
+			# 	# os.remove(check_file)
+			# 	shutil.rmtree(check_folder + '/tnet_new_10_bootstrap')
 
-	print('Done',count, 'out of:', len(folders)*2)
+	print('Done',count, 'out of:', len(folders)*5)
 
 def main():
 	# get_sequences_and_network()
