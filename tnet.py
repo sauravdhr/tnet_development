@@ -31,8 +31,8 @@ right_score = {}
 solution_count = {}
 hosts = []
 transmission_edges = []
-flag_best_prob = 1
-
+rand_seed = None
+flag_max_prob = None
 
 
 
@@ -122,13 +122,14 @@ def initialize_internal_nodes(rooted_tree):
 		initialize_score_count(nonterminal)
 
 def get_host_from_count(count):
-	if (flag_best_prob == 1):
+	if (flag_max_prob):
 		max_count = max(count)
 		for i in range(len(count)):
 			if count[i] != max_count:
 				count[i] = 0
 
 	probs = [float(i)/sum(count) for i in count]
+	np.random.seed(rand_seed)
 	ch = np.random.choice(len(probs), p=probs)
 	return hosts[ch]
 
@@ -190,27 +191,30 @@ def write_transmission_edges(file, source, edges):
 
 	result.close()
 
+def read_parser_args(args):
+	global rand_seed
+	rand_seed = args.seed
+	global flag_max_prob
+	flag_max_prob = args.maxprob
+
 def main():
-	if len(sys.argv) >= 3:
-		INPUT_TREE_FILE = os.path.abspath(sys.argv[1])
-		OUTPUT_FILE = os.path.abspath(sys.argv[2])
-	else:
-		raise IndexError("Usage: python3 tnet.py [input phylogeny file] [desired output file]")
+	parser = argparse.ArgumentParser(description='Process TNet arguments.')
+	parser.add_argument('INPUT_TREE_FILE', action='store', type=str, help='input file name')
+	parser.add_argument('OUTPUT_FILE', action='store', type=str, help='output file name')
+	parser.add_argument('-sd', '--seed', default=None, type=int, help='random number generator seed')
+	parser.add_argument('-mx', '--maxprob', default=False, action="store_true", help='build with max probability')
+	parser.add_argument('--version', action='version', version='%(prog)s 1.1')
+	args = parser.parse_args()
+	print(args)
 
-	parser = argparse.ArgumentParser(description='Process some integers.')
-	parser.add_argument("-mp", "--", dest = "hostname", default = "xyz.edu", help="Server name")
-	# parser.add_argument("-db", "--database", dest = "db", default = "ding_dong", help="Database name")
-	# parser.add_argument("-u", "--username",dest ="username", help="User name")
-	# parser.add_argument("-p", "--password",dest = "password", help="Password")
-	# parser.add_argument("-size", "--binsize",dest = "binsize", help="Size", type=int)
-
-	input_tree = initialize_tree(INPUT_TREE_FILE)
+	read_parser_args(args)
+	input_tree = initialize_tree(args.INPUT_TREE_FILE)
 	initialize_leaf_nodes(input_tree)
 	initialize_internal_nodes(input_tree)
 	input_tree.root.name = choose_root_host(input_tree.root)
 	choose_internal_node_host(input_tree)
 	transmission_edges = get_transmission_edges(input_tree)
-	write_transmission_edges(OUTPUT_FILE, input_tree.root.name, transmission_edges)
+	write_transmission_edges(args.OUTPUT_FILE, input_tree.root.name, transmission_edges)
 
 	# print('Transmission count:', len(transmission_edges), transmission_edges)
 	print('The minimum parsimony cost is:', min(score[input_tree.root]), 'with root:', input_tree.root.name)

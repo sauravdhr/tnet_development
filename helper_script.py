@@ -89,6 +89,7 @@ def root_raxml_best_tree():
 def run_tnet_new_besttree_multithreaded(times = 100):
 	data_dir = 'dataset/'
 	folders = next(os.walk(data_dir))[1]
+	folders = ['SEIR01_sl250_mr025_nv10_1']
 	t = []
 
 	for folder in folders:
@@ -99,7 +100,7 @@ def run_tnet_new_besttree_multithreaded(times = 100):
 			os.mkdir(output_dir)
 
 		tree_file = input_dir + '/RAxML_rootedTree.bestTree.favites'
-		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_new_max_prob'
+		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_new_fixed_prob'
 		t.append(threading.Thread(target=ms.run_tnet_new_multiple_times, args=(tree_file, out_file, times)))
 
 	for i in range(len(t)):
