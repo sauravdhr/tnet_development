@@ -486,7 +486,7 @@ def main():
 	# create_tnet_bootstrap_output(50)
 	# create_directed_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)
 	# create_undirected_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)
-	check_and_clean()
+	# check_and_clean()
 
 
 
