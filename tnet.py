@@ -33,7 +33,7 @@ hosts = []
 transmission_edges = []
 rand_seed = None
 flag_max_prob = None
-
+flag_equal_prob = None
 
 
 def initialize_tree(input_file):
@@ -55,7 +55,7 @@ def initialize_leaf_nodes(rooted_tree):
 	global hosts
 	hosts = list(set(temp_host))
 	hosts.sort()
-	print('Total hosts: ', len(hosts), hosts)
+	# print('Total hosts: ', len(hosts), hosts)
 
 	for terminal in rooted_tree.get_terminals():
 		temp = []
@@ -122,7 +122,11 @@ def initialize_internal_nodes(rooted_tree):
 		initialize_score_count(nonterminal)
 
 def get_host_from_count(count):
-	if (flag_max_prob):
+	if flag_equal_prob:
+		for i in range(len(count)):
+			if count[i] != 0:
+				count[i] = 1
+	elif flag_max_prob:
 		max_count = max(count)
 		for i in range(len(count)):
 			if count[i] != max_count:
@@ -137,13 +141,13 @@ def choose_root_host(root_node):
 	probs = []
 	min_score = min(score[root_node])
 	for i in range(len(score[root_node])):
-		if score[root_node][i]==min_score:
+		if score[root_node][i] == min_score:
 			probs.append(solution_count[root_node][i])
 		else:
 			probs.append(0)
 
-	print('Root', probs)
-	print('Root score', score[root_node])
+	# print('Root', probs)
+	# print('Root score', score[root_node])
 	return get_host_from_count(probs)
 
 def choose_internal_node_host(rooted_tree):
@@ -196,6 +200,8 @@ def read_parser_args(args):
 	rand_seed = args.seed
 	global flag_max_prob
 	flag_max_prob = args.maxprob
+	global flag_equal_prob
+	flag_equal_prob = args.equalprob
 
 def main():
 	parser = argparse.ArgumentParser(description='Process TNet arguments.')
@@ -203,9 +209,10 @@ def main():
 	parser.add_argument('OUTPUT_FILE', action='store', type=str, help='output file name')
 	parser.add_argument('-sd', '--seed', default=None, type=int, help='random number generator seed')
 	parser.add_argument('-mx', '--maxprob', default=False, action="store_true", help='build with max probability')
+	parser.add_argument('-eq', '--equalprob', default=False, action="store_true", help='give equal probability to all optimal solutions')
 	parser.add_argument('--version', action='version', version='%(prog)s 1.1')
 	args = parser.parse_args()
-	print(args)
+	# print(args)
 
 	read_parser_args(args)
 	input_tree = initialize_tree(args.INPUT_TREE_FILE)

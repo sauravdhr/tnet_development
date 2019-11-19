@@ -89,7 +89,7 @@ def root_raxml_best_tree():
 def run_tnet_new_besttree_multithreaded(times = 100):
 	data_dir = 'dataset/'
 	folders = next(os.walk(data_dir))[1]
-	folders = ['SEIR01_sl250_mr025_nv10_1']
+	# folders = ['SEIR01_sl250_mr025_nv10_1']
 	t = []
 
 	for folder in folders:
@@ -100,7 +100,7 @@ def run_tnet_new_besttree_multithreaded(times = 100):
 			os.mkdir(output_dir)
 
 		tree_file = input_dir + '/RAxML_rootedTree.bestTree.favites'
-		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_new_fixed_prob'
+		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_new_max_prob'
 		t.append(threading.Thread(target=ms.run_tnet_new_multiple_times, args=(tree_file, out_file, times)))
 
 	for i in range(len(t)):
@@ -108,6 +108,32 @@ def run_tnet_new_besttree_multithreaded(times = 100):
 
 	for i in range(len(t)):
 		t[i].join()
+
+def run_tnet_new_besttree_multithreaded_with_pool(times = 100, pool):
+	data_dir = 'dataset/'
+	folders = next(os.walk(data_dir))[1]
+	# folders = ['SEIR01_sl250_mr025_nv10_1']
+	t = []
+
+	for folder in folders:
+		print('Inside',folder)
+		input_dir = data_dir + folder + '/RAxML_output'
+		output_dir = 'outputs/' + folder + '/tnet_best_tree/'
+		if not os.path.exists(output_dir):
+			os.mkdir(output_dir)
+
+		tree_file = input_dir + '/RAxML_rootedTree.bestTree.favites'
+		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_new_equal_prob'
+		t.append(threading.Thread(target=ms.run_tnet_new_multiple_times, args=(tree_file, out_file, times)))
+
+	while len(t) > 0:
+		pool = min(pool, len(t))
+		for i in range(pool):
+			t[i].start()
+
+		for i in range(pool):
+			t[0].join()
+			t.pop(0)
 
 def run_tnet_old_besttree(times = 100):
 	data_dir = 'dataset/'
@@ -184,7 +210,8 @@ def main():
 	# create_raxml_scripts_with_bootstrap(100, 'raxml_scripts')
 	# run_raxml_scripts_with_threading('raxml_scripts')
 	# root_raxml_best_tree()
-	run_tnet_new_besttree_multithreaded(100)
+	# run_tnet_new_besttree_multithreaded(100)
+	run_tnet_new_besttree_multithreaded_with_pool(100, 60)
 	# run_tnet_old_besttree(1)
 	# run_phyloscanner_besttree()
 	# print_data_summary_()
