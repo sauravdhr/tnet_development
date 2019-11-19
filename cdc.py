@@ -34,7 +34,7 @@ def get_true_transmission_edges(outbreak):
 def run_new_tnet_cdc_multithreaded(times = 100):
 	for outbreak in known_outbreaks:
 		input_folder = 'CDC/' + outbreak + '/tnet_input'
-		output_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap'
+		output_folder = 'CDC/' + outbreak + '/tnet_new_equal_prob_bootstrap'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 			ms.run_tnet_new_single_folder(input_folder, output_folder, times)
@@ -65,15 +65,16 @@ def run_old_tnet_cdc_single_tree(times = 100):
 			# print(input_file, output_file)
 			ms.run_tnet_old_multiple_times(input_file, output_file, times)
 
-def run_new_tnet_cdc_single_tree_multithreaded(times = 100):
+def run_new_tnet_cdc_single_tree(times = 100):
 	for outbreak in known_outbreaks:
 		input_file = 'CDC/'+outbreak+'/tnet_input/RAxML_rootedTree.25'
 		output_folder = 'CDC/'+outbreak+'/tnet_single_tree/'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		
-		output_file = output_folder + 'single_tree.' + str(times) + '.tnet_new'
+		output_file = output_folder + 'single_tree.' + str(times) + '.tnet_new_equal_prob'
 		if not os.path.exists(output_file):
+			# print(input_file, output_file)
 			ms.run_tnet_new_multiple_times(input_file, output_file, times)
 
 def create_cdc_tnet_summary_directed(threshold):
@@ -145,14 +146,14 @@ def check_and_clean():
 
 
 def main():
-	# run_new_tnet_cdc_multithreaded()
-	# run_new_tnet_cdc_single_tree_multithreaded(1)
+	run_new_tnet_cdc_multithreaded(100)
+	# run_new_tnet_cdc_single_tree(100)
 	# create_cdc_tnet_summary_directed(40)
 	# create_cdc_tnet_summary_undirected(40)
 	# check_and_clean()
 	# get_true_transmission_edges('BJ')
 	# run_old_tnet_cdc()
-	run_old_tnet_cdc_single_tree(1)
+	# run_old_tnet_cdc_single_tree(1)
 
 
 if __name__ == "__main__": main()
