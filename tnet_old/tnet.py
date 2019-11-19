@@ -13,7 +13,7 @@ def rename_back(node):
     if not node.name == 'root':
         node.name = node.name.split('outbreak')[1]
 
-def netgen(file_path, tnet_outfile, verbose=False, tnet_path='TNet/lib/tnet.linux'):
+def netgen(file_path, tnet_outfile, verbose=False, tnet_path='tnet_old/tnet.linux'):
     # Prepare input tree file
     tree = Phylogeny(file_path)
     # if verbose:

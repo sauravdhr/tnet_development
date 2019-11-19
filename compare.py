@@ -75,12 +75,11 @@ def compare_tnet_best_tree():
 		print('inside folder: ',folder)
 		real = set(ge.get_real_edges('dataset/' + folder + '/transmission_network.txt'))
 		tnet_single = set(ge.get_mul_tnet_edges(data_dir + folder + '/tnet_best_tree/bestTree.1.tnet_new_max_prob', 0))
-		single_run = get_prec_rec_f1(real, tnet_single)[1]
+		single_run = get_prec_rec_f1(real, tnet_single)[2]
 
 		F1 = []
 		for th in thresholds:
 			tnet = set(ge.get_mul_tnet_edges(data_dir + folder + '/tnet_best_tree/bestTree.100.tnet_new_max_prob', th))
-
 			temp = get_prec_rec_f1(real, tnet)
 			F1.append(temp[2])
 
