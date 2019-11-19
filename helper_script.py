@@ -109,7 +109,7 @@ def run_tnet_new_besttree_multithreaded(times = 100):
 	for i in range(len(t)):
 		t[i].join()
 
-def run_tnet_new_besttree_multithreaded_with_pool(times = 100, pool):
+def run_tnet_new_besttree_multithreaded_with_pool(times, pool):
 	data_dir = 'dataset/'
 	folders = next(os.walk(data_dir))[1]
 	# folders = ['SEIR01_sl250_mr025_nv10_1']
@@ -211,7 +211,7 @@ def main():
 	# run_raxml_scripts_with_threading('raxml_scripts')
 	# root_raxml_best_tree()
 	# run_tnet_new_besttree_multithreaded(100)
-	run_tnet_new_besttree_multithreaded_with_pool(100, 60)
+	run_tnet_new_besttree_multithreaded_with_pool(1, 60)
 	# run_tnet_old_besttree(1)
 	# run_phyloscanner_besttree()
 	# print_data_summary_()
