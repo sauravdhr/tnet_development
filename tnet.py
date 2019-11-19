@@ -142,8 +142,8 @@ def choose_root_host(root_node):
 		else:
 			probs.append(0)
 
-	print('Root', probs)
-	print('Root score', score[root_node])
+	# print('Root', probs)
+	# print('Root score', score[root_node])
 	return get_host_from_count(probs)
 
 def choose_internal_node_host(rooted_tree):
@@ -205,7 +205,7 @@ def main():
 	parser.add_argument('-mx', '--maxprob', default=False, action="store_true", help='build with max probability')
 	parser.add_argument('--version', action='version', version='%(prog)s 1.1')
 	args = parser.parse_args()
-	print(args)
+	# print(args)
 
 	read_parser_args(args)
 	input_tree = initialize_tree(args.INPUT_TREE_FILE)

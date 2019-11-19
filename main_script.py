@@ -259,7 +259,7 @@ def run_tnet_new_multiple_times(input_file, output_file, time = 100):
 	result = open(output_file, 'w+')
 
 	for t in range(time):
-		cmd = 'python3 tnet.py {} {}'.format(input_file, temp_out_file)
+		cmd = 'python3 tnet.py {} {} -mx'.format(input_file, temp_out_file)
 		# print(cmd)
 		os.system(cmd)
 		e_list = []
@@ -486,7 +486,7 @@ def main():
 	# create_tnet_bootstrap_output(50)
 	# create_directed_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)
 	# create_undirected_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)
-	check_and_clean()
+	# check_and_clean()
 
 
 
