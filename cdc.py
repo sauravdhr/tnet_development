@@ -80,12 +80,12 @@ def run_new_tnet_cdc_single_tree(times = 100):
 def create_cdc_tnet_summary_directed(threshold):
 	for outbreak in known_outbreaks:
 		print('Inside', outbreak)
-		input_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap'
-		output_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_summary_directed'
+		input_folder = 'CDC/' + outbreak + '/tnet_old_bootstrap'
+		output_folder = 'CDC/' + outbreak + '/tnet_old_bootstrap_summary_directed'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		edge_dict = {}
-		result = open(output_folder + '/tnet_new_bootstrap' + '_th_' + str(threshold) + '_summary.csv', 'w+')
+		result = open(output_folder + '/tnet_old_bootstrap' + '_th_' + str(threshold) + '_summary.csv', 'w+')
 		file_list = next(os.walk(input_folder))[2]
 
 		for file in file_list:
@@ -146,9 +146,9 @@ def check_and_clean():
 
 
 def main():
-	run_new_tnet_cdc_multithreaded(100)
+	# run_new_tnet_cdc_multithreaded(100)
 	# run_new_tnet_cdc_single_tree(100)
-	# create_cdc_tnet_summary_directed(40)
+	create_cdc_tnet_summary_directed(40)
 	# create_cdc_tnet_summary_undirected(40)
 	# check_and_clean()
 	# get_true_transmission_edges('BJ')
