@@ -88,20 +88,20 @@ def compare_tnet_best_tree():
 
 
 def compare_tnet_cdc_single_tree():
-	F1_file = open('results/cdc_single_tree_tnet/single_tree.recall.tnet.new.equal.prob.csv', 'w+')
+	F1_file = open('results/cdc_single_tree_tnet/single_tree.f1.tnet.old.fixed.csv', 'w+')
 	F1_file.write('dataset,single,10,20,30,40,50,60,70,80,90,100\n')
 	thresholds = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
 	for outbreak in cdc.known_outbreaks:
 		real = set(cdc.get_true_transmission_edges(outbreak))
-		tnet_single = set(ge.get_mul_tnet_edges('CDC/' + outbreak + '/tnet_single_tree/single_tree.1.tnet_new_equal_prob', 0))
-		single_run = get_prec_rec_f1(real, tnet_single)[1]
+		tnet_single = set(ge.get_mul_tnet_edges('CDC/' + outbreak + '/tnet_single_tree/single_tree.1.tnet_old_fixed', 0))
+		single_run = get_prec_rec_f1(real, tnet_single)[2]
 
 		F1 = []
 		for th in thresholds:
-			tnet = set(ge.get_mul_tnet_edges('CDC/' + outbreak + '/tnet_single_tree/single_tree.100.tnet_new_equal_prob', th))
+			tnet = set(ge.get_mul_tnet_edges('CDC/' + outbreak + '/tnet_single_tree/single_tree.100.tnet_old_fixed', th))
 			temp = get_prec_rec_f1(real, tnet)
-			F1.append(temp[1])
+			F1.append(temp[2])
 
 		F1_file.write('{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(outbreak,single_run,F1[0],F1[1],F1[2],F1[3],F1[4],F1[5]
 						,F1[6],F1[7],F1[8],F1[9]))

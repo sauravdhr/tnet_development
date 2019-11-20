@@ -147,7 +147,7 @@ def run_tnet_old_besttree(times = 100):
 			os.mkdir(output_dir)
 
 		tree_file = input_dir + '/RAxML_rootedTree.bestTree.favites'
-		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_old'
+		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_old_fixed'
 		ms.run_tnet_old_multiple_times(tree_file, out_file, times)
 
 def print_data_summary_():
@@ -211,8 +211,8 @@ def main():
 	# run_raxml_scripts_with_threading('raxml_scripts')
 	# root_raxml_best_tree()
 	# run_tnet_new_besttree_multithreaded(100)
-	run_tnet_new_besttree_multithreaded_with_pool(1, 60)
-	# run_tnet_old_besttree(1)
+	# run_tnet_new_besttree_multithreaded_with_pool(1, 60)
+	run_tnet_old_besttree(1)
 	# run_phyloscanner_besttree()
 	# print_data_summary_()
 

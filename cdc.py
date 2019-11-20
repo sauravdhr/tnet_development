@@ -42,14 +42,14 @@ def run_new_tnet_cdc_multithreaded(times = 100):
 def run_old_tnet_cdc(times = 100):
 	for outbreak in known_outbreaks:
 		input_folder = 'CDC/' + outbreak + '/tnet_input/'
-		output_folder = 'CDC/' + outbreak + '/tnet_old_bootstrap/'
+		output_folder = 'CDC/' + outbreak + '/tnet_old_fixed_bootstrap/'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		file_list = next(os.walk(input_folder))[2]
 		for file in file_list:
 			input_file = input_folder + file
 			parts = file.split('.')
-			output_file = output_folder + parts[1] + '.tnet_old'
+			output_file = output_folder + parts[1] + '.tnet_old_fixed'
 			# print(input_file, output_file)
 			ms.run_tnet_old_multiple_times(input_file, output_file, times)
 
@@ -60,7 +60,7 @@ def run_old_tnet_cdc_single_tree(times = 100):
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		
-		output_file = output_folder + 'single_tree.' + str(times) + '.tnet_old'
+		output_file = output_folder + 'single_tree.' + str(times) + '.tnet_old_fixed'
 		if not os.path.exists(output_file):
 			# print(input_file, output_file)
 			ms.run_tnet_old_multiple_times(input_file, output_file, times)
@@ -80,12 +80,12 @@ def run_new_tnet_cdc_single_tree(times = 100):
 def create_cdc_tnet_summary_directed(threshold):
 	for outbreak in known_outbreaks:
 		print('Inside', outbreak)
-		input_folder = 'CDC/' + outbreak + '/tnet_old_bootstrap'
-		output_folder = 'CDC/' + outbreak + '/tnet_old_bootstrap_summary_directed'
+		input_folder = 'CDC/' + outbreak + '/tnet_new_equal_prob_bootstrap'
+		output_folder = 'CDC/' + outbreak + '/tnet_new_equal_prob_bootstrap_summary_directed'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		edge_dict = {}
-		result = open(output_folder + '/tnet_old_bootstrap' + '_th_' + str(threshold) + '_summary.csv', 'w+')
+		result = open(output_folder + '/tnet_bootstrap' + '_th_' + str(threshold) + '_summary.csv', 'w+')
 		file_list = next(os.walk(input_folder))[2]
 
 		for file in file_list:
@@ -133,24 +133,27 @@ def check_and_clean():
 	count = 0
 	total = len(known_outbreaks)
 	for outbreak in known_outbreaks:
-		check_folder = 'CDC/' + outbreak + '/tnet_input/'
+		check_folder = 'CDC/' + outbreak + '/tnet_single_tree/'
 		if os.path.exists(check_folder):
 			# os.rmdir(check_folder)
+			# check_file = check_folder + 'single_tree.1.tnet_old_fixed'
+			# if os.path.exists(check_file):
+			# 	os.remove(check_file)
 			file_list = next(os.walk(check_folder))[2]
-			# count += len(file_list)
+			count += len(file_list)
 			# check_file = check_folder + file_list[0]
 			# if os.stat(check_file).st_size == 0:
 			# 	print(folder)
 
-	print('Progress:', count, 'out of', total*26)
+	print('Progress:', count, 'out of', total*8)
 
 
 def main():
 	# run_new_tnet_cdc_multithreaded(100)
 	# run_new_tnet_cdc_single_tree(100)
-	create_cdc_tnet_summary_directed(40)
+	# create_cdc_tnet_summary_directed(50)
 	# create_cdc_tnet_summary_undirected(40)
-	# check_and_clean()
+	check_and_clean()
 	# get_true_transmission_edges('BJ')
 	# run_old_tnet_cdc()
 	# run_old_tnet_cdc_single_tree(1)
