@@ -135,17 +135,17 @@ def check_and_clean():
 	for outbreak in known_outbreaks:
 		check_folder = 'CDC/' + outbreak + '/tnet_single_tree/'
 		if os.path.exists(check_folder):
-			# os.rmdir(check_folder)
-			# check_file = check_folder + 'single_tree.1.tnet_old_fixed'
-			# if os.path.exists(check_file):
-			# 	os.remove(check_file)
+			# shutil.rmtree(check_folder)
+			check_file = check_folder + 'single_tree.100.tnet_old_fixed'
+			if os.path.exists(check_file):
+				os.remove(check_file)
 			file_list = next(os.walk(check_folder))[2]
 			count += len(file_list)
 			# check_file = check_folder + file_list[0]
 			# if os.stat(check_file).st_size == 0:
 			# 	print(folder)
 
-	print('Progress:', count, 'out of', total*8)
+	print('Progress:', count, 'out of', total*6)
 
 
 def main():
@@ -153,10 +153,10 @@ def main():
 	# run_new_tnet_cdc_single_tree(100)
 	# create_cdc_tnet_summary_directed(50)
 	# create_cdc_tnet_summary_undirected(40)
-	check_and_clean()
+	# check_and_clean()
 	# get_true_transmission_edges('BJ')
 	# run_old_tnet_cdc()
-	# run_old_tnet_cdc_single_tree(1)
+	run_old_tnet_cdc_single_tree(100)
 
 
 if __name__ == "__main__": main()
