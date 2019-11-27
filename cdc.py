@@ -72,7 +72,7 @@ def run_new_tnet_cdc_single_tree(times = 100):
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		
-		output_file = output_folder + 'single_tree.' + str(times) + '.tnet_new_equal_prob'
+		output_file = output_folder + 'single_tree.' + str(times) + '.tnet_new_min'
 		if not os.path.exists(output_file):
 			# print(input_file, output_file)
 			ms.run_tnet_new_multiple_times(input_file, output_file, times)
@@ -136,7 +136,7 @@ def check_and_clean():
 		check_folder = 'CDC/' + outbreak + '/tnet_single_tree/'
 		if os.path.exists(check_folder):
 			# shutil.rmtree(check_folder)
-			check_file = check_folder + 'single_tree.100.tnet_old_fixed'
+			check_file = check_folder + 'single_tree.1.tnet_new_min'
 			if os.path.exists(check_file):
 				os.remove(check_file)
 			file_list = next(os.walk(check_folder))[2]
@@ -150,13 +150,13 @@ def check_and_clean():
 
 def main():
 	# run_new_tnet_cdc_multithreaded(100)
-	# run_new_tnet_cdc_single_tree(100)
+	run_new_tnet_cdc_single_tree(1)
 	# create_cdc_tnet_summary_directed(50)
 	# create_cdc_tnet_summary_undirected(40)
 	# check_and_clean()
 	# get_true_transmission_edges('BJ')
 	# run_old_tnet_cdc()
-	run_old_tnet_cdc_single_tree(100)
+	# run_old_tnet_cdc_single_tree(100)
 
 
 if __name__ == "__main__": main()

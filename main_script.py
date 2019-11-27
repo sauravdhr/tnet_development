@@ -259,7 +259,7 @@ def run_tnet_new_multiple_times(input_file, output_file, time = 100):
 	result = open(output_file, 'w+')
 
 	for t in range(time):
-		cmd = 'python3 tnet.py {} {} -eq'.format(input_file, temp_out_file)
+		cmd = 'python3 tnet_min.py {} {}'.format(input_file, temp_out_file)
 		# print(cmd)
 		os.system(cmd)
 		e_list = []
