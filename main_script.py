@@ -259,7 +259,7 @@ def run_tnet_new_multiple_times(input_file, output_file, time = 100):
 	result = open(output_file, 'w+')
 
 	for t in range(time):
-		cmd = 'python3 tnet.py {} {} -eq'.format(input_file, temp_out_file)
+		cmd = 'python3 tnet_dev.py {} {}'.format(input_file, temp_out_file)
 		# print(cmd)
 		os.system(cmd)
 		e_list = []
@@ -335,7 +335,7 @@ def run_tnet_new_single_folder(input_dir, output_dir, times = 100):
 	for tree in tree_list:
 		tree_file = input_dir + '/' + tree
 		name = tree.split('.')[1]
-		out_file = output_dir + '/' + name +'.tnet_new'
+		out_file = output_dir + '/' + name +'.tnet'
 		if not os.path.exists(out_file):
 			t.append(threading.Thread(target=run_tnet_new_multiple_times, args=(tree_file, out_file, times)))
 

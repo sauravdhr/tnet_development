@@ -25,7 +25,7 @@ def check_progress():
 			print(folder)
 		# break
 
-	print('Progress:', count, 'out of', total*8)
+	print('Progress:', count, 'out of', total*9)
 
 
 def main():
