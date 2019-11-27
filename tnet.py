@@ -50,11 +50,11 @@ def initialize_leaf_nodes(rooted_tree):
 	temp_host = []
 	for terminal in rooted_tree.get_terminals():
 		terminal.name = terminal.name.split('_')[0]
-		temp_host.append(terminal.name)
+		if terminal.name not in temp_host:
+			temp_host.append(terminal.name)
 
 	global hosts
-	hosts = list(set(temp_host))
-	hosts.sort()
+	hosts = temp_host.copy()
 	# print('Total hosts: ', len(hosts), hosts)
 
 	for terminal in rooted_tree.get_terminals():
@@ -135,6 +135,33 @@ def get_host_from_count(count):
 	probs = [float(i)/sum(count) for i in count]
 	np.random.seed(rand_seed)
 	ch = np.random.choice(len(probs), p=probs)
+	return hosts[ch]
+
+def get_host_from_count_without_np(count):
+	if flag_equal_prob:
+		for i in range(len(count)):
+			if count[i] != 0:
+				count[i] = 1
+	elif flag_max_prob:
+		max_count = max(count)
+		for i in range(len(count)):
+			if count[i] != max_count:
+				count[i] = 0
+
+	countTotal = 0;
+	for i in range(len(count)):
+		countTotal += count[i];
+
+	np.random.seed(rand_seed)
+	np.random.randint(countTotal)
+	
+	ch = None
+	for i in range(len(count)):
+		countTotal -= count[i];
+		if countTotal < 0:
+			ch = i
+			break
+
 	return hosts[ch]
 
 def choose_root_host(root_node):

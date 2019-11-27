@@ -147,7 +147,7 @@ def run_tnet_old_besttree(times = 100):
 			os.mkdir(output_dir)
 
 		tree_file = input_dir + '/RAxML_rootedTree.bestTree.favites'
-		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_old'
+		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_old_fixed'
 		ms.run_tnet_old_multiple_times(tree_file, out_file, times)
 
 def print_data_summary_():
