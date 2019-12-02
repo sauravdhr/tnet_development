@@ -462,6 +462,7 @@ def check_and_clean():
 			# count += 1
 			file_list = next(os.walk(check_folder))[2]
 			count += len(file_list)
+			if len(file_list) == 10: print(folder)
 			for file in file_list:
 				if "tnet_new_rand_mod_bug_fixed" in file:
 					check_file = check_folder + '/' + file
@@ -471,7 +472,7 @@ def check_and_clean():
 			# 	# os.remove(check_file)
 			# 	shutil.rmtree(check_folder + '/tnet_new_10_bootstrap')
 
-	print('Done',count, 'out of:', len(folders)*5)
+	print('Done',count, 'out of:', len(folders)*9)
 
 def main():
 	# get_sequences_and_network()
