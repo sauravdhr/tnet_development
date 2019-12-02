@@ -207,7 +207,7 @@ def choose_internal_node_host_with_min(rooted_tree):
 			elif min(l_score) + 1 == l_score[index]:
 				countTotal = 0
 				for i in range(len(l_score)):
-					if l_score[i] == min(l_score):
+					if l_score[i] == min(l_score) or (i == index):
 						countTotal += l_count[i]
 
 				r = np.random.randint(countTotal)
@@ -244,7 +244,7 @@ def choose_internal_node_host_with_min(rooted_tree):
 			elif min(r_score) + 1 == r_score[index]:
 				countTotal = 0
 				for i in range(len(r_score)):
-					if r_score[i] == min(r_score):
+					if r_score[i] == min(r_score) or (i == index):
 						countTotal += r_count[i]
 
 				r = np.random.randint(countTotal)

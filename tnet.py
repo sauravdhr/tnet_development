@@ -179,12 +179,13 @@ def choose_root_host(root_node):
 
 def choose_internal_node_host(rooted_tree):
 	for nonterminal in rooted_tree.get_nonterminals(order = 'preorder'):
-		# print(score[nonterminal])
 		# print(solution_count[nonterminal])
 		index = hosts.index(nonterminal.name)
+		# print('Root', score[nonterminal], 'Index', index)
 
 		if not nonterminal.clades[0].is_terminal():
 			l_score = score[nonterminal.clades[0]].copy()
+			# print('Left', l_score, left_score[nonterminal][index]+1)
 			l_count = solution_count[nonterminal.clades[0]].copy()
 			l_score[index] -= 1
 			for i in range(len(l_score)):
@@ -195,6 +196,7 @@ def choose_internal_node_host(rooted_tree):
 
 		if not nonterminal.clades[1].is_terminal():
 			r_score = score[nonterminal.clades[1]].copy()
+			# print('Right', r_score, right_score[nonterminal][index]+1)
 			r_count = solution_count[nonterminal.clades[1]].copy()
 			r_score[index] -= 1
 			for i in range(len(r_score)):
@@ -203,6 +205,7 @@ def choose_internal_node_host(rooted_tree):
 
 			nonterminal.clades[1].name = get_host_from_count(r_count)
 
+		# print('=========================')
 
 def get_transmission_edges(rooted_tree):
 	edges = []
@@ -222,6 +225,23 @@ def write_transmission_edges(file, source, edges):
 
 	result.close()
 
+def write_info_file(file, rooted_tree):
+	result = open(file + '.info', 'w+')
+	result.write('Hosts list: {}\n'.format(hosts))
+	result.write('Root ID: {}\n'.format(rooted_tree.root.name))
+	result.write('The minimum parsimony cost: {}\n'.format(min(score[rooted_tree.root])))
+	result.write('Root score list: {}\n'.format(score[rooted_tree.root]))
+	result.write('Root assignment count list: {}\n'.format(solution_count[rooted_tree.root]))
+
+	result.write('\nChanges:\n')
+	edges = get_transmission_edges(rooted_tree)
+	for edge in edges:
+		result.write('{} -> {}\n'.format(edge[0], edge[1]))
+
+	result.write('\nNewick Format Tree:\n')
+	Phylo.write([rooted_tree], result, 'newick')
+	result.close()
+
 def read_parser_args(args):
 	global rand_seed
 	rand_seed = args.seed
@@ -237,6 +257,7 @@ def main():
 	parser.add_argument('-sd', '--seed', default=None, type=int, help='random number generator seed')
 	parser.add_argument('-mx', '--maxprob', default=False, action="store_true", help='build with max probability')
 	parser.add_argument('-eq', '--equalprob', default=False, action="store_true", help='give equal probability to all optimal solutions')
+	parser.add_argument('-info', '--info', default=False, action="store_true", help='write info file')
 	parser.add_argument('--version', action='version', version='%(prog)s 1.1')
 	args = parser.parse_args()
 	# print(args)
@@ -252,5 +273,8 @@ def main():
 
 	# print('Transmission count:', len(transmission_edges), transmission_edges)
 	print('The minimum parsimony cost is:', min(score[input_tree.root]), 'with root:', input_tree.root.name)
+
+	if args.info:
+		write_info_file(args.OUTPUT_FILE, input_tree)
 
 if __name__ == "__main__": main()

@@ -462,8 +462,11 @@ def check_and_clean():
 			# count += 1
 			file_list = next(os.walk(check_folder))[2]
 			count += len(file_list)
-			# check_file = check_folder + '/tnet_new_10_bootstrap'
-			# if os.path.exists(check_file):
+			for file in file_list:
+				if "tnet_new_rand_mod_bug_fixed" in file:
+					check_file = check_folder + '/' + file
+					print(check_file)
+					os.remove(check_file)
 			# 	print(folder)
 			# 	# os.remove(check_file)
 			# 	shutil.rmtree(check_folder + '/tnet_new_10_bootstrap')
@@ -481,12 +484,12 @@ def main():
 	# run_phyloscanner(50)
 	# run_phyloscanner_multithreaded(50)
 	# run_tnet_old_multithreaded()
-	run_tnet_new_multithreaded()
+	# run_tnet_new_multithreaded()
 	# create_tnet_bootstrap_output(10)
 	# create_tnet_bootstrap_output(50)
 	# create_directed_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)
 	# create_undirected_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)
-	# check_and_clean()
+	check_and_clean()
 
 
 
