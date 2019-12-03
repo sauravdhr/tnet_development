@@ -123,7 +123,7 @@ def run_tnet_new_besttree_multithreaded_with_pool(times, pool):
 			os.mkdir(output_dir)
 
 		tree_file = input_dir + '/RAxML_rootedTree.bestTree.favites'
-		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_new_with_min_bug_fixed'
+		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_new_with_bias'
 		t.append(threading.Thread(target=ms.run_tnet_new_multiple_times, args=(tree_file, out_file, times)))
 
 	while len(t) > 0:
