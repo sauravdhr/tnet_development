@@ -154,7 +154,7 @@ def get_host_from_count_without_np(count):
 
 	np.random.seed(rand_seed)
 	np.random.randint(countTotal)
-	
+
 	ch = None
 	for i in range(len(count)):
 		countTotal -= count[i];
