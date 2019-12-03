@@ -207,6 +207,63 @@ def choose_internal_node_host(rooted_tree):
 
 		# print('=========================')
 
+def choose_internal_node_host_with_bias(rooted_tree):
+	for nonterminal in rooted_tree.get_nonterminals(order = 'preorder'):
+		# print('\nroot', score[nonterminal])
+		# print(solution_count[nonterminal])
+		index = hosts.index(nonterminal.name)
+		# print('index', index)
+
+		if not nonterminal.clades[0].is_terminal():
+			l_score = score[nonterminal.clades[0]].copy()
+			# print('left', l_score, left_score[nonterminal][index])
+			l_count = solution_count[nonterminal.clades[0]].copy()
+			if min(l_score) == l_score[index]:
+				nonterminal.clades[0].name = hosts[index]
+			elif min(l_score) + 1 == l_score[index]:
+				nonterminal.clades[0].name = hosts[index]
+			else:
+				countTotal = 0
+				for i in range(len(l_score)):
+					if l_score[i] == min(l_score):
+						countTotal += l_count[i]
+
+				r = np.random.randint(countTotal)
+				# print('Rand2:', r, 'Total:', countTotal)
+				for i in range(len(l_score)):
+					if l_score[i] == min(l_score):
+						r -= l_count[i]
+						if r <= 0:
+							nonterminal.clades[0].name = hosts[i]
+							break
+
+		# print('Assigned at left:', hosts.index(nonterminal.clades[0].name))
+
+		if not nonterminal.clades[1].is_terminal():
+			r_score = score[nonterminal.clades[1]].copy()
+			# print('right', r_score, right_score[nonterminal][index])
+			r_count = solution_count[nonterminal.clades[1]].copy()
+			if min(r_score) == r_score[index]:
+				nonterminal.clades[1].name = hosts[index]
+			elif min(r_score) + 1 == r_score[index]:
+				nonterminal.clades[1].name = hosts[index]
+			else:
+				countTotal = 0
+				for i in range(len(r_score)):
+					if r_score[i] == min(r_score):
+						countTotal += r_count[i]
+
+				r = np.random.randint(countTotal)
+				# print('Rand2:', r, 'Total:', countTotal)
+				for i in range(len(r_score)):
+					if r_score[i] == min(r_score):
+						r -= r_count[i]
+						if r <= 0:
+							nonterminal.clades[1].name = hosts[i]
+							break
+
+		# print('Assigned at right:', hosts.index(nonterminal.clades[1].name))
+
 def get_transmission_edges(rooted_tree):
 	edges = []
 	for nonterminal in rooted_tree.get_nonterminals(order = 'preorder'):

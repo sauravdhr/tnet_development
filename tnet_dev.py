@@ -301,7 +301,7 @@ def choose_internal_node_host_with_bias(rooted_tree):
 						if r <= 0:
 							nonterminal.clades[0].name = hosts[i]
 							break
-			
+
 		# print('Assigned at left:', hosts.index(nonterminal.clades[0].name))
 
 		if not nonterminal.clades[1].is_terminal():
@@ -326,7 +326,7 @@ def choose_internal_node_host_with_bias(rooted_tree):
 						if r <= 0:
 							nonterminal.clades[1].name = hosts[i]
 							break
-			
+
 		# print('Assigned at right:', hosts.index(nonterminal.clades[1].name))
 
 def get_transmission_edges(rooted_tree):
