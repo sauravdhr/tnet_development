@@ -259,7 +259,7 @@ def run_tnet_new_multiple_times(input_file, output_file, time = 100):
 	result = open(output_file, 'w+')
 
 	for t in range(time):
-		cmd = 'python3 tnet.py {} {}'.format(input_file, temp_out_file)
+		cmd = 'python3 tnet_dev.py {} {}'.format(input_file, temp_out_file)
 		# print(cmd)
 		os.system(cmd)
 		e_list = []
@@ -345,6 +345,24 @@ def run_tnet_new_single_folder(input_dir, output_dir, times = 100):
 	for i in range(len(t)):
 		t[i].join()
 
+def run_tnet_new_single_folder_with_pool(input_dir, output_dir, times = 100, pool = 60):
+	t = []
+	tree_list = next(os.walk(input_dir))[2]
+	for tree in tree_list:
+		tree_file = input_dir + '/' + tree
+		name = tree.split('.')[1]
+		out_file = output_dir + '/' + name +'.tnet'
+		if not os.path.exists(out_file):
+			t.append(threading.Thread(target=run_tnet_new_multiple_times, args=(tree_file, out_file, times)))
+
+	while len(t) > 0:
+		pool = min(pool, len(t))
+		for i in range(pool):
+			t[i].start()
+
+		for i in range(pool):
+			t[0].join()
+			t.pop(0)
 
 def run_tnet_new_multithreaded(times = 100):
 	data_dir = 'dataset/'
@@ -353,12 +371,12 @@ def run_tnet_new_multithreaded(times = 100):
 	for folder in folders:
 		print('Inside',folder)
 		input_dir = data_dir + folder + '/rooted_bootstrap_trees'
-		output_dir = 'outputs/' + folder + '/tnet_new_' + str(times) + '_bootstrap'
+		output_dir = 'outputs/' + folder + '/tnet_new_' + str(times) + '_bootstrap_with_bias'
 		if not os.path.exists('outputs/' + folder):
 			os.mkdir('outputs/' + folder)
 		if not os.path.exists(output_dir):
 			os.mkdir(output_dir)
-			run_tnet_new_single_folder(input_dir, output_dir, times)
+			run_tnet_new_single_folder_with_pool(input_dir, output_dir, times, 50)
 
 def create_tnet_bootstrap_output(bootstrap):
 	data_dir = 'dataset/'
@@ -484,12 +502,12 @@ def main():
 	# run_phyloscanner(50)
 	# run_phyloscanner_multithreaded(50)
 	# run_tnet_old_multithreaded()
-	# run_tnet_new_multithreaded()
+	run_tnet_new_multithreaded()
 	# create_tnet_bootstrap_output(10)
 	# create_tnet_bootstrap_output(50)
 	# create_directed_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)
 	# create_undirected_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)
-	check_and_clean()
+	# check_and_clean()
 
 
 

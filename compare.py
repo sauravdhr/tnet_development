@@ -68,7 +68,7 @@ def compare_tnet_best_tree():
 	folders.sort()
 
 	thresholds = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-	F1_file = open('results/single_tree_tnet/best_tree.f1.tnet.new.csv', 'w+')
+	F1_file = open('results/single_tree_tnet/best_tree.f1.tnet.old.csv', 'w+')
 	F1_file.write('dataset,10,20,30,40,50,60,70,80,90,100\n')
 
 	for folder in folders:
@@ -79,7 +79,7 @@ def compare_tnet_best_tree():
 
 		F1 = []
 		for th in thresholds:
-			tnet = set(ge.get_mul_tnet_edges(data_dir + folder + '/tnet_best_tree/bestTree.100.tnet_new', th))
+			tnet = set(ge.get_mul_tnet_edges(data_dir + folder + '/tnet_best_tree/bestTree.100.tnet_old', th))
 			temp = get_prec_rec_f1(real, tnet)
 			F1.append(temp[2])
 
