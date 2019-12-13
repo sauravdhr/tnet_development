@@ -191,6 +191,35 @@ def choose_internal_node_host(rooted_tree):
 
 			nonterminal.clades[1].name = get_host_from_count(r_count)
 
+def choose_internal_node_host_test(rooted_tree):
+	for nonterminal in rooted_tree.get_nonterminals(order = 'preorder'):
+		# print('root', score[nonterminal])
+		# print(solution_count[nonterminal])
+		index = hosts.index(nonterminal.name)
+		# print('index', index)
+
+		if not nonterminal.clades[0].is_terminal():
+			l_score = score[nonterminal.clades[0]].copy()
+			# print('left', l_score, left_score[nonterminal][index])
+			l_count = solution_count[nonterminal.clades[0]].copy()
+			l_score[index] -= 1
+			for i in range(len(l_score)):
+				if l_score[i] != left_score[nonterminal][index]:
+					l_count[i] = 0
+
+			nonterminal.clades[0].name = get_host_from_count(l_count)
+
+		if not nonterminal.clades[1].is_terminal():
+			r_score = score[nonterminal.clades[1]].copy()
+			# print('right', r_score, right_score[nonterminal][index])
+			r_count = solution_count[nonterminal.clades[1]].copy()
+			r_score[index] -= 1
+			for i in range(len(r_score)):
+				if r_score[i] != right_score[nonterminal][index]:
+					r_count[i] = 0
+
+			nonterminal.clades[1].name = get_host_from_count(r_count)
+
 def choose_internal_node_host_with_min(rooted_tree):
 	for nonterminal in rooted_tree.get_nonterminals(order = 'preorder'):
 		# print('\nroot', score[nonterminal])

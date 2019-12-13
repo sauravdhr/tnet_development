@@ -2,7 +2,7 @@
 
 # Library Imports
 from Bio import SeqIO
-# import get_edges as ge
+import get_edges as ge
 import operator
 import os, shutil, sys
 import threading
@@ -410,7 +410,7 @@ def create_directed_tnet_bootstrap_summary(tree_folder, threshold):
 		print('Inside',folder)
 		edge_dict = {}
 		bootstrap_folder = data_dir + folder + '/' + tree_folder
-		output_folder = data_dir + folder + '/tnet_new_bootstrap_summary_directed/'
+		output_folder = data_dir + folder + '/tnet_new_with_bias_bootstrap_summary_directed/'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 
@@ -502,10 +502,10 @@ def main():
 	# run_phyloscanner(50)
 	# run_phyloscanner_multithreaded(50)
 	# run_tnet_old_multithreaded()
-	run_tnet_new_multithreaded()
+	# run_tnet_new_multithreaded()
 	# create_tnet_bootstrap_output(10)
 	# create_tnet_bootstrap_output(50)
-	# create_directed_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)
+	create_directed_tnet_bootstrap_summary('tnet_new_100_bootstrap_with_bias', 100)
 	# create_undirected_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)
 	# check_and_clean()
 
