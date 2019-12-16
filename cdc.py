@@ -34,7 +34,7 @@ def get_true_transmission_edges(outbreak):
 def run_new_tnet_cdc_multithreaded(times = 100):
 	for outbreak in known_outbreaks:
 		input_folder = 'CDC/' + outbreak + '/tnet_input'
-		output_folder = 'CDC/' + outbreak + '/tnet_new_mod_rand_bootstrap'
+		output_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_with_bias'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 			ms.run_tnet_new_single_folder(input_folder, output_folder, times)
@@ -150,9 +150,9 @@ def check_and_clean():
 
 
 def main():
-	# run_new_tnet_cdc_multithreaded(100)
+	run_new_tnet_cdc_multithreaded(100)
 	# run_new_tnet_cdc_single_tree(100)
-	create_cdc_tnet_summary_directed(50)
+	# create_cdc_tnet_summary_directed(50)
 	# create_cdc_tnet_summary_undirected(40)
 	# check_and_clean()
 	# get_true_transmission_edges('BJ')
