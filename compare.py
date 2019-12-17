@@ -109,23 +109,26 @@ def compare_tnet_cdc_single_tree():
 
 def compare_phyloscanner_tnet_directed(bootstrap, threshold):
 	data_dir = 'outputs/'
+	out_dir = '/home/saurav/research/FAVITES_compare_TNet_v2/outputs/'
 	folders = next(os.walk(data_dir))[1]
 	folders.sort()
 
-	F1_file = open('results/favites_directed_comparison/bootstrap.'+str(bootstrap)+'.phyloscanner.tnet.new.th.'+str(threshold)+'.csv', 'w+')
-	F1_file.write('dataset,phylo_prec,phylo_rec,phylo_f1,tnet_prec,tnet_rec,tnet_f1\n')
+	F1_file = open('results/favites_directed_comparison/bootstrap.'+str(bootstrap)+'.phyloscanner.tnet.new.tnet.bias.th.'+str(threshold)+'.boot_th.100.csv', 'w+')
+	F1_file.write('dataset,phylo_prec,phylo_rec,phylo_f1,tnet_prec,tnet_rec,tnet_f1,tnet_bias_prec,tnet_bias_rec,tnet_bias_f1\n')
 
 	for folder in folders:
 		print('inside folder: ',folder)
 		F1 = []
 
 		real = set(ge.get_real_edges('dataset/' + folder + '/transmission_network.txt'))
-		phylo = set(ge.get_phyloscanner_summary_trans_edges(data_dir + folder + '/phyloscanner_output_'+str(bootstrap)+'_bootstrap/favites_hostRelationshipSummary.csv', bootstrap//2))
-		tnet = set(ge.get_tnet_summary_edges(data_dir + folder + '/tnet_new_bootstrap_summary_directed/tnet_new_'+str(bootstrap)+'_bootstrap_th_'+str(threshold)+'_summary.csv', bootstrap//2))
+		phylo = set(ge.get_phyloscanner_summary_trans_edges(out_dir + folder + '/phyloscanner_output_'+str(bootstrap)+'_bootstrap/favites_hostRelationshipSummary.csv', bootstrap))
+		tnet = set(ge.get_tnet_summary_edges(out_dir + folder + '/tnet_new_bootstrap_summary_directed/tnet_new_'+str(bootstrap)+'_bootstrap_th_'+str(threshold)+'_summary.csv', bootstrap))
+		tnet_bias = set(ge.get_tnet_summary_edges(data_dir + folder + '/tnet_new_with_bias_bootstrap_summary_directed/tnet_new_'+str(bootstrap)+'_bootstrap_with_bias_th_'+str(threshold)+'_summary.csv', bootstrap))
 
 		F1.extend(get_prec_rec_f1(real, phylo))
 		F1.extend(get_prec_rec_f1(real, tnet))
-		F1_file.write('{},{},{},{},{},{},{}\n'.format(folder,F1[0],F1[1],F1[2],F1[3],F1[4],F1[5]))
+		F1.extend(get_prec_rec_f1(real, tnet_bias))
+		F1_file.write('{},{},{},{},{},{},{},{},{},{}\n'.format(folder,F1[0],F1[1],F1[2],F1[3],F1[4],F1[5],F1[6],F1[7],F1[8]))
 
 	F1_file.close()
 
@@ -174,20 +177,23 @@ def compare_phyloscanner_tnet_best_tree(threshold):
 	F1_file.close()
 
 def compare_cdc_directed(threshold):
-	F1_file = open('results/cdc_directed_comparison/cdc.phyloscanner.tnet.new.th.' + str(threshold) + '.rand.mod.csv', 'w+')
-	F1_file.write('dataset,phylo_prec,phylo_rec,phylo_f1,tnet_prec,tnet_rec,tnet_f1\n')
+	F1_file = open('results/cdc_directed_comparison/cdc.phyloscanner.tnet.new.tnet.bias.th.' + str(threshold) + '.csv', 'w+')
+	F1_file.write('dataset,phylo_prec,phylo_rec,phylo_f1,tnet_prec,tnet_rec,tnet_f1,tnet_bias_prec,tnet_bias_rec,tnet_bias_f1\n')
+	out_dir = '/home/saurav/research/FAVITES_compare_TNet_v2/'
 
 	for outbreak in cdc.known_outbreaks:
 		F1 = []
-		bootstrap = len(next(os.walk('CDC/' + outbreak + '/tnet_new_mod_rand_bootstrap'))[2])
+		bootstrap = len(next(os.walk('CDC/' + outbreak + '/tnet_input'))[2])
 
 		real = set(cdc.get_true_transmission_edges(outbreak))
 		phylo = set(ge.get_phyloscanner_summary_trans_edges('CDC/' + outbreak + '/phyloscanner_output/cdc_hostRelationshipSummary.csv', bootstrap//2))
-		tnet = set(ge.get_tnet_summary_edges('CDC/' + outbreak + '/tnet_new_bootstrap_summary_directed/tnet_new_bootstrap_th_' + str(threshold) + '_rand_mod_summary.csv', bootstrap//2))
+		tnet = set(ge.get_tnet_summary_edges(out_dir + 'CDC/' + outbreak + '/tnet_new_bootstrap_summary_directed/tnet_new_bootstrap_th_' + str(threshold) + '_summary.csv', bootstrap//2))
+		tnet_bias = set(ge.get_tnet_summary_edges('CDC/' + outbreak + '/tnet_new_bootstrap_with_bias_summary_directed/tnet_new_bootstrap_th_' + str(threshold) + '_summary.csv', bootstrap//2))
 
 		F1.extend(get_prec_rec_f1(real, phylo))
 		F1.extend(get_prec_rec_f1(real, tnet))
-		F1_file.write('{},{},{},{},{},{},{}\n'.format(outbreak,F1[0],F1[1],F1[2],F1[3],F1[4],F1[5]))
+		F1.extend(get_prec_rec_f1(real, tnet_bias))
+		F1_file.write('{},{},{},{},{},{},{},{},{},{}\n'.format(outbreak,F1[0],F1[1],F1[2],F1[3],F1[4],F1[5],F1[6],F1[7],F1[8]))
 
 	F1_file.close()
 
@@ -224,13 +230,13 @@ def partition_result():
 
 
 def main():
-	compare_tnet_best_tree()
+	# compare_tnet_best_tree()
 	# compare_tnet_single_run()
 	# compare_tnet_cdc_single_tree()
 	# compare_phyloscanner_tnet_best_tree(100)
 	# compare_phyloscanner_tnet_directed(100, 50)
 	# compare_phyloscanner_tnet_undirected(100, 30)
-	# compare_cdc_directed(50)
+	compare_cdc_directed(80)
 	# compare_cdc_undirected(40)
 	# partition_result()
 

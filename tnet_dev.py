@@ -29,6 +29,7 @@ score = {}
 left_score = {}
 right_score = {}
 solution_count = {}
+br_len = {}
 hosts = []
 transmission_edges = []
 rand_seed = None
@@ -60,16 +61,20 @@ def initialize_leaf_nodes(rooted_tree):
 	for terminal in rooted_tree.get_terminals():
 		temp = []
 		count = []
+		b_len = []
 		for host in hosts:
 			if host==terminal.name:
 				temp.append(0)
 				count.append(1)
+				b_len.append(terminal.branch_length)
 			else:
 				temp.append(9999999999)
 				count.append(0)
+				b_len.append(0.0)
 
 		score[terminal] = temp
 		solution_count[terminal] = count
+		br_len[terminal] = b_len
 
 def initialize_score_count(node):
 	l_score = score[node.clades[0]].copy()
@@ -117,9 +122,16 @@ def initialize_score_count(node):
 	# print('After count :', temp_count)
 	# print('=========================')
 
+# def initialize_br_len(node):
+# 	l_len = br_len[node.clades[0]].copy()
+# 	r_len = br_len[node.clades[1]].copy()
+
+	
+
 def initialize_internal_nodes(rooted_tree):
 	for nonterminal in rooted_tree.get_nonterminals(order = 'postorder'):
 		initialize_score_count(nonterminal)
+		initialize_br_len(nonterminal)
 
 def get_host_from_count(count):
 	if (flag_max_prob):
@@ -401,16 +413,17 @@ def main():
 	read_parser_args(args)
 	input_tree = initialize_tree(args.INPUT_TREE_FILE)
 	initialize_leaf_nodes(input_tree)
+	print(len(br_len))
 	initialize_internal_nodes(input_tree)
-	input_tree.root.name = choose_root_host_with_min(input_tree.root)
-	choose_internal_node_host_with_bias(input_tree)
-	transmission_edges = get_transmission_edges(input_tree)
-	write_transmission_edges(args.OUTPUT_FILE, input_tree.root.name, transmission_edges)
+	# input_tree.root.name = choose_root_host_with_min(input_tree.root)
+	# choose_internal_node_host_with_bias(input_tree)
+	# transmission_edges = get_transmission_edges(input_tree)
+	# write_transmission_edges(args.OUTPUT_FILE, input_tree.root.name, transmission_edges)
 
-	if args.info:
-		write_info_file(args.OUTPUT_FILE, input_tree)
+	# if args.info:
+	# 	write_info_file(args.OUTPUT_FILE, input_tree)
 
-	# print('Transmission count:', len(transmission_edges), transmission_edges)
-	print('The minimum parsimony cost is:', min(score[input_tree.root]), 'with root:', input_tree.root.name)
+	# # print('Transmission count:', len(transmission_edges), transmission_edges)
+	# print('The minimum parsimony cost is:', min(score[input_tree.root]), 'with root:', input_tree.root.name)
 
 if __name__ == "__main__": main()
