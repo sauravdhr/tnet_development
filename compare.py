@@ -68,7 +68,7 @@ def compare_tnet_best_tree():
 	folders.sort()
 
 	thresholds = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-	F1_file = open('results/single_tree_tnet/best_tree.recall.tnet.new.with.bias.csv', 'w+')
+	F1_file = open('results/single_tree_tnet/best_tree.f1.tnet.new.max.br_len.csv', 'w+')
 	F1_file.write('dataset,10,20,30,40,50,60,70,80,90,100\n')
 
 	for folder in folders:
@@ -79,9 +79,9 @@ def compare_tnet_best_tree():
 
 		F1 = []
 		for th in thresholds:
-			tnet = set(ge.get_mul_tnet_edges(data_dir + folder + '/tnet_best_tree/bestTree.100.tnet_new_with_bias', th))
+			tnet = set(ge.get_mul_tnet_edges(data_dir + folder + '/tnet_best_tree/bestTree.100.tnet_new_max_br_len', th))
 			temp = get_prec_rec_f1(real, tnet)
-			F1.append(temp[1])
+			F1.append(temp[2])
 
 		F1_file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format(folder,F1[0],F1[1],F1[2],F1[3],F1[4],F1[5]
 						,F1[6],F1[7],F1[8],F1[9]))
@@ -230,13 +230,13 @@ def partition_result():
 
 
 def main():
-	# compare_tnet_best_tree()
+	compare_tnet_best_tree()
 	# compare_tnet_single_run()
 	# compare_tnet_cdc_single_tree()
 	# compare_phyloscanner_tnet_best_tree(100)
 	# compare_phyloscanner_tnet_directed(100, 50)
 	# compare_phyloscanner_tnet_undirected(100, 30)
-	compare_cdc_directed(80)
+	# compare_cdc_directed(80)
 	# compare_cdc_undirected(40)
 	# partition_result()
 
