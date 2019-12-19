@@ -122,11 +122,33 @@ def initialize_score_count(node):
 	# print('After count :', temp_count)
 	# print('=========================')
 
-# def initialize_br_len(node):
-# 	l_len = br_len[node.clades[0]].copy()
-# 	r_len = br_len[node.clades[1]].copy()
+def initialize_br_len(node):
+	if node.clades[0].is_terminal():
+		temp_left = br_len[node.clades[0]].copy()
+	else:
+		temp_left = []
+		l_br = br_len[node.clades[0]].copy()
+		for i in range(len(l_br)):
+			if l_br[i] > 0.0:
+				temp_left.append(l_br[i] + node.clades[0].branch_length)
+			else:
+				temp_left.append(0.0)
 
-	
+	if node.clades[1].is_terminal():
+		temp_right = br_len[node.clades[1]].copy()
+	else:
+		temp_right = []
+		r_br = br_len[node.clades[1]].copy()
+		for i in range(len(r_br)):
+			if r_br[i] > 0.0:
+				temp_right.append(r_br[i] + node.clades[1].branch_length)
+			else:
+				temp_right.append(0.0)
+
+	for i in range(len(temp_left)):
+		temp_left[i] += temp_right[i]
+
+	br_len[node] = temp_left
 
 def initialize_internal_nodes(rooted_tree):
 	for nonterminal in rooted_tree.get_nonterminals(order = 'postorder'):
@@ -173,6 +195,16 @@ def choose_root_host_with_min(root_node):
 			r -= solution_count[root_node][i]
 			if r < 0:
 				return hosts[i]
+
+def choose_root_host_with_max_br_len(root_node):
+	countTotal = 0
+	min_score = min(score[root_node])
+	max_br_len = -1
+	for i in range(len(score[root_node])):
+		if score[root_node][i] == min_score:
+			max_br_len = max(max_br_len, br_len[root_node][i])
+
+	return hosts[br_len[root_node].index(max_br_len)]
 
 def choose_internal_node_host(rooted_tree):
 	for nonterminal in rooted_tree.get_nonterminals(order = 'preorder'):
@@ -413,17 +445,16 @@ def main():
 	read_parser_args(args)
 	input_tree = initialize_tree(args.INPUT_TREE_FILE)
 	initialize_leaf_nodes(input_tree)
-	print(len(br_len))
 	initialize_internal_nodes(input_tree)
-	# input_tree.root.name = choose_root_host_with_min(input_tree.root)
-	# choose_internal_node_host_with_bias(input_tree)
-	# transmission_edges = get_transmission_edges(input_tree)
-	# write_transmission_edges(args.OUTPUT_FILE, input_tree.root.name, transmission_edges)
+	input_tree.root.name = choose_root_host_with_max_br_len(input_tree.root)
+	choose_internal_node_host_with_min(input_tree)
+	transmission_edges = get_transmission_edges(input_tree)
+	write_transmission_edges(args.OUTPUT_FILE, input_tree.root.name, transmission_edges)
 
-	# if args.info:
-	# 	write_info_file(args.OUTPUT_FILE, input_tree)
+	if args.info:
+		write_info_file(args.OUTPUT_FILE, input_tree)
 
-	# # print('Transmission count:', len(transmission_edges), transmission_edges)
-	# print('The minimum parsimony cost is:', min(score[input_tree.root]), 'with root:', input_tree.root.name)
+	# print('Transmission count:', len(transmission_edges), transmission_edges)
+	print('The minimum parsimony cost is:', min(score[input_tree.root]), 'with root:', input_tree.root.name)
 
 if __name__ == "__main__": main()
