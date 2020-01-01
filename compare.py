@@ -60,8 +60,6 @@ def compare_tnet_single_run():
 		F1 = get_prec_rec_f1(real, tnet_single)
 		F1_file.write('{},{},{},{}\n'.format(folder,F1[0],F1[1],F1[2]))
 
-
-
 def compare_tnet_best_tree():
 	data_dir = 'outputs/'
 	folders = next(os.walk(data_dir))[1]
