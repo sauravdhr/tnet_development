@@ -37,17 +37,28 @@ def create_ptree_from_newick_file(input_file, output_file):
 	input_tree.rooted = True
 	ptree_file = open(output_file, 'w+')
 	node_id = {}
+	dist_from_root = {}
+
+	dist_from_root[input_tree.root] = 0.0
+	for nonterminal in input_tree.get_nonterminals(order = 'preorder'):
+		dist_from_root[nonterminal.clades[0]] = dist_from_root[nonterminal] + nonterminal.clades[0].branch_length
+		dist_from_root[nonterminal.clades[1]] = dist_from_root[nonterminal] + nonterminal.clades[1].branch_length
+
+	max_dist = max(dist_from_root.values())
+	# print(max_dist)
 
 	count = 1
 	for terminal in input_tree.get_terminals():
 		host_label = terminal.name.split('_')[0]
+		dist = dist_from_root[terminal] / max_dist
 		node_id[terminal] = count
-		ptree_file.write('1 0 0 {}\n'.format(host_label))
+		ptree_file.write('{} 0 0 {}\n'.format(dist, host_label))
 		count += 1
 
 	for nonterminal in input_tree.get_nonterminals(order = 'postorder'):
 		node_id[nonterminal] = count
-		ptree_file.write('0.1 {} {} -1\n'.format(node_id[nonterminal.clades[0]], node_id[nonterminal.clades[1]]))
+		dist = dist_from_root[nonterminal] / max_dist
+		ptree_file.write('{} {} {} -1\n'.format(dist, node_id[nonterminal.clades[0]], node_id[nonterminal.clades[1]]))
 		count += 1
 
 def create_ptree_files():
@@ -76,7 +87,7 @@ def check_and_clean():
 def main():
 	# create_host_files()
 	create_ptree_from_newick_file('dataset/SEIR01_sl250_mr025_nv10_1/RAxML_output/RAxML_rootedTree.bestTree.favites',
-									'dataset/SEIR01_sl250_mr025_nv10_1/sharptni_input/ptree_file')
+									'dataset/SEIR01_sl250_mr025_nv10_1/sharptni_input/ptree_file.txt')
 	# create_ptree_files()
 	# create_sharptni_favites_output()
 	# check_and_clean()
