@@ -50,8 +50,37 @@ def create_sharptni_inputs():
 			os.mkdir(output_folder)
 		create_single_sharptni_input(input_file, output_folder)
 
-create_sharptni_favites_output():
-	cmd = './SharpTNI/sample_sankoff <.host> <.ptree> <output_prefix>'
+def create_single_folder_sharptni_output(input_folder, output_folder):
+	host_file = input_folder + '/host_file.txt'
+	ptree_file = input_folder + '/ptree_file.txt'
+	out_file = output_folder + '/sankoff.out'
+	info_file = output_folder + '/sankoff.info'
+	gamma_file = output_folder + '/sankoff.dot'
+	png_file = output_folder + '/sankoff.png'
+
+	cmd = './SharpTNI/sankoff {} {} {} -c >> {}'.format(host_file, ptree_file, out_file, info_file)
+	# print(cmd)
+	# os.system(cmd)
+
+	cmd = './SharpTNI/gamma {} {} 2> {}'.format(host_file, out_file, gamma_file)
+	# print(cmd)
+	os.system(cmd)
+
+	cmd = 'dot -Tpng {} -o {}'.format(gamma_file, png_file)
+	# print(cmd)
+	os.system(cmd)
+
+def create_sharptni_favites_outputs():
+	folders = next(os.walk('dataset/'))[1]
+
+	for folder in folders:
+		print(folder)
+		input_folder = 'dataset/' + folder + '/sharptni_input'
+		output_folder = 'outputs/' + folder + '/sharptni'
+		if not os.path.exists(output_folder):
+			os.mkdir(output_folder)
+		create_single_folder_sharptni_output(input_folder, output_folder)
+		# break
 
 def check_and_clean():
 	data_dir = 'dataset/'
@@ -63,11 +92,9 @@ def check_and_clean():
 		if os.path.exists(new_dir):
 			os.remove(new_dir)
 
-
-
 def main():
-	create_sharptni_inputs()
-	# create_sharptni_favites_output()
+	# create_sharptni_inputs()
+	create_sharptni_favites_outputs()
 	# check_and_clean()
 
 
