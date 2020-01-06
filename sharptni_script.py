@@ -8,69 +8,50 @@ import operator
 import os, shutil, sys
 import threading
 
-def create_host_files():
-	data_dir = 'dataset/'
-	folders = next(os.walk(data_dir))[1]
-
-	for folder in folders:
-		print(folder)
-		favites_fasta = data_dir + folder +'/sequences.fasta'
-		records = list(SeqIO.parse(favites_fasta, 'fasta'))
-		temp_hosts = []
-		for record in records:
-			parts = record.id.split('_')
-			if parts[0] not in temp_hosts:
-				temp_hosts.append(parts[0])
-
-		new_dir = data_dir + folder + '/sharptni_input'
-		if not os.path.exists(new_dir):
-			os.mkdir(new_dir)
-
-		temp_hosts.sort()
-		host_file = open(new_dir + '/host_file.txt', 'w+')
-
-		for host in temp_hosts:
-			host_file.write('{} 0 1\n'.format(host))
-
-def create_ptree_from_newick_file(input_file, output_file):
+def create_single_sharptni_input(input_file, output_folder):
 	input_tree = Phylo.read(input_file, 'newick')
 	input_tree.rooted = True
-	ptree_file = open(output_file, 'w+')
+
+	host_file = open(output_folder + '/host_file.txt', 'w+')
+	ptree_file = open(output_folder + '/ptree_file.txt', 'w+')
+	host_id_map = open(output_folder + '/host_id_map.txt', 'w+')
+
+	host_id = {}
 	node_id = {}
-	dist_from_root = {}
 
-	dist_from_root[input_tree.root] = 0.0
-	for nonterminal in input_tree.get_nonterminals(order = 'preorder'):
-		dist_from_root[nonterminal.clades[0]] = dist_from_root[nonterminal] + nonterminal.clades[0].branch_length
-		dist_from_root[nonterminal.clades[1]] = dist_from_root[nonterminal] + nonterminal.clades[1].branch_length
-
-	max_dist = max(dist_from_root.values())
-	# print(max_dist)
-
-	count = 1
+	node_count = 1
+	host_count = 1
 	for terminal in input_tree.get_terminals():
-		host_label = terminal.name.split('_')[0]
-		dist = dist_from_root[terminal] / max_dist
-		node_id[terminal] = count
-		ptree_file.write('{} 0 0 {}\n'.format(dist, host_label))
-		count += 1
+		real_label = terminal.name.split('_')[0]
+		if real_label not in host_id:
+			host_id[real_label] = host_count
+			host_count += 1
+		node_id[terminal] = node_count
+		ptree_file.write('{} 0 0 {}\n'.format(1, host_id[real_label]))
+		node_count += 1
 
 	for nonterminal in input_tree.get_nonterminals(order = 'postorder'):
-		node_id[nonterminal] = count
-		dist = dist_from_root[nonterminal] / max_dist
-		ptree_file.write('{} {} {} -1\n'.format(dist, node_id[nonterminal.clades[0]], node_id[nonterminal.clades[1]]))
-		count += 1
+		node_id[nonterminal] = node_count
+		ptree_file.write('{} {} {} -1\n'.format(0.1, node_id[nonterminal.clades[0]], node_id[nonterminal.clades[1]]))
+		node_count += 1
 
-def create_ptree_files():
+	for real_id, mapped_id in host_id.items():
+		host_file.write('{} 0.0 1.0\n'.format(mapped_id))
+		host_id_map.write('{}, {}\n'.format(real_id, mapped_id))
+
+def create_sharptni_inputs():
 	data_dir = 'dataset/'
 	folders = next(os.walk(data_dir))[1]
 
 	for folder in folders:
-		print(folder)
+		input_file = data_dir + folder + '/RAxML_output/RAxML_rootedTree.bestTree.favites'
+		output_folder = data_dir + folder + '/sharptni_input'
+		if not os.path.exists(output_folder):
+			os.mkdir(output_folder)
+		create_single_sharptni_input(input_file, output_folder)
 
-
-# create_sharptni_favites_output():
-# 	cmd = './SharpTNI/sample_sankoff <.host> <.ptree> <output_prefix>'
+create_sharptni_favites_output():
+	cmd = './SharpTNI/sample_sankoff <.host> <.ptree> <output_prefix>'
 
 def check_and_clean():
 	data_dir = 'dataset/'
@@ -85,10 +66,7 @@ def check_and_clean():
 
 
 def main():
-	# create_host_files()
-	create_ptree_from_newick_file('dataset/SEIR01_sl250_mr025_nv10_1/RAxML_output/RAxML_rootedTree.bestTree.favites',
-									'dataset/SEIR01_sl250_mr025_nv10_1/sharptni_input/ptree_file.txt')
-	# create_ptree_files()
+	create_sharptni_inputs()
 	# create_sharptni_favites_output()
 	# check_and_clean()
 
