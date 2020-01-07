@@ -37,9 +37,9 @@ def create_single_sharptni_input(input_file, output_folder):
 
 	for real_id, mapped_id in host_id.items():
 		host_file.write('{} 0.0 1.0\n'.format(mapped_id))
-		host_id_map.write('{}, {}\n'.format(real_id, mapped_id))
+		host_id_map.write('{},{}\n'.format(real_id, mapped_id))
 
-def create_sharptni_inputs():
+def create_sharptni_inputs_favites():
 	data_dir = 'dataset/'
 	folders = next(os.walk(data_dir))[1]
 
@@ -60,7 +60,7 @@ def create_single_folder_sharptni_output(input_folder, output_folder):
 
 	cmd = './SharpTNI/sankoff {} {} {} -c >> {}'.format(host_file, ptree_file, out_file, info_file)
 	# print(cmd)
-	# os.system(cmd)
+	os.system(cmd)
 
 	cmd = './SharpTNI/gamma {} {} 2> {}'.format(host_file, out_file, gamma_file)
 	# print(cmd)
@@ -70,9 +70,8 @@ def create_single_folder_sharptni_output(input_folder, output_folder):
 	# print(cmd)
 	os.system(cmd)
 
-def create_sharptni_favites_outputs():
+def create_sharptni_outputs_favites():
 	folders = next(os.walk('dataset/'))[1]
-
 	for folder in folders:
 		print(folder)
 		input_folder = 'dataset/' + folder + '/sharptni_input'
@@ -80,6 +79,37 @@ def create_sharptni_favites_outputs():
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		create_single_folder_sharptni_output(input_folder, output_folder)
+		# break
+
+def convert_dot_file_to_mapped_edge_file(host_id_map, dot_file, edge_file):
+	host_list = []
+	f = open(host_id_map)
+	for line in f.readlines():
+		parts = line.rstrip().split(',')
+		host_list.append(parts[0])
+	f.close()
+
+	f = open(dot_file)
+	output_file = open(edge_file, 'w+')
+	output_file.write('None\tNone\n')
+	for line in f.readlines():
+		if '->' in line:
+			parts = line.strip().split(' ')
+			h1 = int(parts[0])
+			h2 = int(parts[2])
+			output_file.write('{}\t{}\n'.format(host_list[h1], host_list[h2]))
+	output_file.close()
+	f.close()
+
+def convert_dots_to_egde_list_favites():
+	folders = next(os.walk('dataset/'))[1]
+
+	for folder in folders:
+		print(folder)
+		host_id_map = 'dataset/' + folder + '/sharptni_input/host_id_map.txt'
+		dot_file = 'outputs/' + folder + '/sharptni/sankoff.dot'
+		edge_file = 'outputs/' + folder + '/sharptni/sankoff.edges'
+		convert_dot_file_to_mapped_edge_file(host_id_map, dot_file, edge_file)
 		# break
 
 def check_and_clean():
@@ -93,8 +123,9 @@ def check_and_clean():
 			os.remove(new_dir)
 
 def main():
-	# create_sharptni_inputs()
-	create_sharptni_favites_outputs()
+	# create_sharptni_inputs_favites()
+	# create_sharptni_outputs_favites()
+	convert_dots_to_egde_list_favites()
 	# check_and_clean()
 
 
