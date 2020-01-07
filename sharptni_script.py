@@ -50,7 +50,7 @@ def create_sharptni_inputs_favites():
 			os.mkdir(output_folder)
 		create_single_sharptni_input(input_file, output_folder)
 
-def create_single_folder_sharptni_output(input_folder, output_folder):
+def create_single_sankoff_sharptni_output(input_folder, output_folder):
 	host_file = input_folder + '/host_file.txt'
 	ptree_file = input_folder + '/ptree_file.txt'
 	out_file = output_folder + '/sankoff.out'
@@ -70,6 +70,27 @@ def create_single_folder_sharptni_output(input_folder, output_folder):
 	# print(cmd)
 	os.system(cmd)
 
+def create_sample_sankoff_sharptni_output(input_folder, output_folder, times):
+	host_file = input_folder + '/host_file.txt'
+	ptree_file = input_folder + '/ptree_file.txt'
+	out_folder = output_folder + '/sample_sankoff'
+	if not os.path.exists(out_folder):
+		os.mkdir(out_folder)
+	out_file = out_folder + '/sankoff.'
+
+	# cmd = './SharpTNI/sample_sankoff -l {} {} {} {}'.format(times, host_file, ptree_file, out_file)
+	# print(cmd)
+	# os.system(cmd)
+
+	sample_list = next(os.walk(out_folder))[2]
+	for sample in sample_list:
+		out_file = out_folder + '/' + sample
+		file_name = sample.replace('out', 'dot')
+		gamma_file = out_folder + '/' + file_name
+		cmd = './SharpTNI/gamma {} {} 2> {}'.format(host_file, out_file, gamma_file)
+		# print(cmd)
+		os.system(cmd)
+	
 def create_sharptni_outputs_favites():
 	folders = next(os.walk('dataset/'))[1]
 	for folder in folders:
@@ -78,7 +99,7 @@ def create_sharptni_outputs_favites():
 		output_folder = 'outputs/' + folder + '/sharptni'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
-		create_single_folder_sharptni_output(input_folder, output_folder)
+		create_sample_sankoff_sharptni_output(input_folder, output_folder, 100)
 		# break
 
 def convert_dot_file_to_mapped_edge_file(host_id_map, dot_file, edge_file):
@@ -118,15 +139,17 @@ def check_and_clean():
 
 	for folder in folders:
 		print(folder)
-		new_dir = data_dir + folder + '/sharptni_input/host_file.txt'
+		# new_dir = 'outputs/' + folder + '/sharptni/sample_sankoff'
+		new_dir = 'outputs/' + folder + '/sharptni/sankoff.png'
 		if os.path.exists(new_dir):
 			os.remove(new_dir)
+			# print(len(next(os.walk(new_dir))[2]))
 
 def main():
 	# create_sharptni_inputs_favites()
 	# create_sharptni_outputs_favites()
-	convert_dots_to_egde_list_favites()
-	# check_and_clean()
+	# convert_dots_to_egde_list_favites()
+	check_and_clean()
 
 
 if __name__ == "__main__": main()
