@@ -133,6 +133,48 @@ def convert_dots_to_egde_list_favites():
 		convert_dot_file_to_mapped_edge_file(host_id_map, dot_file, edge_file)
 		# break
 
+def create_sharptni_sample_summary(host_id_map, input_dir, output_file):
+	host_list = []
+	f = open(host_id_map)
+	for line in f.readlines():
+		parts = line.rstrip().split(',')
+		host_list.append(parts[0])
+	f.close()
+
+	sample_list = [x for x in os.listdir(input_dir) if x.endswith(".dot")]
+	output_file += str(len(sample_list))
+	edge_dict = {}
+
+	for sample in sample_list:
+		f = open(input_dir + '/' + sample)
+		for line in f.readlines():
+			if '->' in line:
+				parts = line.strip().split(' ')
+				h1 = int(parts[0])
+				h2 = int(parts[2])
+				edge = host_list[h1] + '->' + host_list[h2]
+				if edge in edge_dict:
+					edge_dict[edge] += 1
+				else:
+					edge_dict[edge] = 1
+		f.close()
+
+	edge_dict = dict(sorted(edge_dict.items(), key=operator.itemgetter(1),reverse=True))
+	f = open(output_file, 'w+')
+	for x, y in edge_dict.items():
+		f.write('{}\t{}\n'.format(x, y))
+
+def create_sankoff_sample_summary():
+	data_dir = 'outputs/'
+	folders = next(os.walk(data_dir))[1]
+	for folder in folders:
+		print(folder)
+		host_id_map = 'dataset/' + folder + '/sharptni_input/host_id_map.txt'
+		input_dir = data_dir + folder + '/sharptni/sample_sankoff'
+		output_file = data_dir + folder + '/sharptni/sample_sankoff_summary.'
+		create_sharptni_sample_summary(host_id_map, input_dir, output_file)
+		# break
+
 def check_and_clean():
 	data_dir = 'dataset/'
 	folders = next(os.walk(data_dir))[1]
@@ -149,7 +191,7 @@ def main():
 	# create_sharptni_inputs_favites()
 	# create_sharptni_outputs_favites()
 	# convert_dots_to_egde_list_favites()
-	check_and_clean()
-
+	create_sankoff_sample_summary()
+	# check_and_clean()
 
 if __name__ == "__main__": main()
