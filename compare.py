@@ -84,6 +84,33 @@ def compare_tnet_best_tree():
 		F1_file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format(folder,F1[0],F1[1],F1[2],F1[3],F1[4],F1[5]
 						,F1[6],F1[7],F1[8],F1[9]))
 
+def compare_sharptni_best_tree():
+	data_dir = 'outputs/'
+	folders = next(os.walk(data_dir))[1]
+	folders.sort()
+
+	thresholds = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+	F1_file = open('results/sharptni/best_tree.recall.sample_sankoff.csv', 'w+')
+	F1_file.write('dataset,10,20,30,40,50,60,70,80,90,100\n')
+
+	for folder in folders:
+		print('inside folder: ',folder)
+		real = set(ge.get_real_edges('dataset/' + folder + '/transmission_network.txt'))
+		sample_list = next(os.walk(data_dir + folder + '/sharptni'))[2]
+		sharptni_file = [idx for idx in sample_list if idx.startswith('sample_sankoff_summary')]
+		sharptni_file = sharptni_file[0]
+		sample_num = int(sharptni_file.split('.')[1])
+		print(sample_num)
+
+		F1 = []
+		for th in thresholds:
+			thr = round(sample_num * (th / 100))
+			tnet = set(ge.get_mul_tnet_edges(data_dir + folder + '/sharptni/' + sharptni_file, thr))
+			temp = get_prec_rec_f1(real, tnet)
+			F1.append(temp[1])
+
+		F1_file.write('{},{},{},{},{},{},{},{},{},{},{}\n'.format(folder,F1[0],F1[1],F1[2],F1[3],F1[4],F1[5]
+						,F1[6],F1[7],F1[8],F1[9]))
 
 def compare_tnet_cdc_single_tree():
 	F1_file = open('results/cdc_single_tree_tnet/single_tree.f1.tnet.new.with.min.csv', 'w+')
@@ -179,15 +206,21 @@ def compare_sharptni_tnet_best_tree(threshold):
 	folders = next(os.walk(data_dir))[1]
 	folders.sort()
 
-	F1_file = open('results/sharptni/best_tree.sharptni.tnet.rand.mod.th.'+str(threshold)+'.csv', 'w+')
+	F1_file = open('results/sharptni/best_tree.sharptni.sankoff_sample.tnet.rand_mod.th.'+str(threshold)+'.csv', 'w+')
 	F1_file.write('dataset,sharp_prec,sharp_rec,sharp_f1,tnet_prec,tnet_rec,tnet_f1\n')
 
 	for folder in folders:
 		print('inside folder: ',folder)
 		F1 = []
+		sample_list = next(os.walk(data_dir + folder + '/sharptni'))[2]
+		sharptni_file = [idx for idx in sample_list if idx.startswith('sample_sankoff_summary')]
+		sharptni_file = sharptni_file[0]
+		th2 = int(sharptni_file.split('.')[1])
+		th2 = round(th2 * (threshold / 100))
+		print(th2)
 
 		real = set(ge.get_real_edges('dataset/' + folder + '/transmission_network.txt'))
-		sharp = set(ge.get_tnet_single_tree_edges(data_dir + folder + '/sharptni/sankoff.edges'))
+		sharp = set(ge.get_mul_tnet_edges(data_dir + folder + '/sharptni/' + sharptni_file, th2))
 		tnet = set(ge.get_mul_tnet_edges(data_dir + folder + '/tnet_best_tree/bestTree.100.tnet_new_rand_mod_bug_fixed', threshold))
 
 		F1.extend(get_prec_rec_f1(real, sharp))
@@ -251,6 +284,7 @@ def partition_result():
 
 def main():
 	# compare_tnet_best_tree()
+	# compare_sharptni_best_tree()
 	compare_sharptni_tnet_best_tree(50)
 	# compare_tnet_single_run()
 	# compare_tnet_cdc_single_tree()
