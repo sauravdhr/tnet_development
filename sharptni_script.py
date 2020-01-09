@@ -128,8 +128,8 @@ def convert_dots_to_egde_list_favites():
 	for folder in folders:
 		print(folder)
 		host_id_map = 'dataset/' + folder + '/sharptni_input/host_id_map.txt'
-		dot_file = 'outputs/' + folder + '/sharptni/sankoff.dot'
-		edge_file = 'outputs/' + folder + '/sharptni/sankoff.edges'
+		dot_file = 'outputs/' + folder + '/sharptni/sankoff_2.dot'
+		edge_file = 'outputs/' + folder + '/sharptni/sankoff_2.edges'
 		convert_dot_file_to_mapped_edge_file(host_id_map, dot_file, edge_file)
 		# break
 
@@ -190,8 +190,8 @@ def check_and_clean():
 def main():
 	# create_sharptni_inputs_favites()
 	# create_sharptni_outputs_favites()
-	# convert_dots_to_egde_list_favites()
-	create_sankoff_sample_summary()
+	convert_dots_to_egde_list_favites()
+	# create_sankoff_sample_summary()
 	# check_and_clean()
 
 if __name__ == "__main__": main()
