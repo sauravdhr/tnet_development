@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 # Library Imports
-from Bio import SeqIO
 from Bio import Phylo
 import get_edges as ge
 import operator
@@ -50,6 +49,17 @@ def create_sharptni_inputs_favites():
 			os.mkdir(output_folder)
 		create_single_sharptni_input(input_file, output_folder)
 
+def create_sharptni_inputs_cdc():
+	data_dir = 'CDC/'
+	folders = next(os.walk(data_dir))[1]
+
+	for folder in folders:
+		input_file = data_dir + folder + '/tnet_input/RAxML_rootedTree.25'
+		output_folder = data_dir + folder + '/sharptni_input'
+		if not os.path.exists(output_folder):
+			os.mkdir(output_folder)
+		create_single_sharptni_input(input_file, output_folder)
+
 def create_single_sankoff_sharptni_output(input_folder, output_folder):
 	host_file = input_folder + '/host_file.txt'
 	ptree_file = input_folder + '/ptree_file.txt'
@@ -78,9 +88,9 @@ def create_sample_sankoff_sharptni_output(input_folder, output_folder, times):
 		os.mkdir(out_folder)
 	out_file = out_folder + '/sankoff.'
 
-	# cmd = './SharpTNI/sample_sankoff -l {} {} {} {}'.format(times, host_file, ptree_file, out_file)
+	cmd = './SharpTNI/sample_sankoff -l {} {} {} {}'.format(times, host_file, ptree_file, out_file)
 	# print(cmd)
-	# os.system(cmd)
+	os.system(cmd)
 
 	sample_list = next(os.walk(out_folder))[2]
 	for sample in sample_list:
@@ -97,6 +107,17 @@ def create_sharptni_outputs_favites():
 		print(folder)
 		input_folder = 'dataset/' + folder + '/sharptni_input'
 		output_folder = 'outputs/' + folder + '/sharptni'
+		if not os.path.exists(output_folder):
+			os.mkdir(output_folder)
+		create_sample_sankoff_sharptni_output(input_folder, output_folder, 100)
+		# break
+
+def create_sharptni_outputs_cdc():
+	folders = next(os.walk('CDC/'))[1]
+	for folder in folders:
+		print(folder)
+		input_folder = 'CDC/' + folder + '/sharptni_input'
+		output_folder = 'CDC/' + folder + '/sharptni_output'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		create_sample_sankoff_sharptni_output(input_folder, output_folder, 100)
@@ -175,6 +196,17 @@ def create_sankoff_sample_summary():
 		create_sharptni_sample_summary(host_id_map, input_dir, output_file)
 		# break
 
+def create_sankoff_sample_summary_cdc():
+	data_dir = 'CDC/'
+	folders = next(os.walk(data_dir))[1]
+	for folder in folders:
+		print(folder)
+		host_id_map = data_dir + folder + '/sharptni_input/host_id_map.txt'
+		input_dir = data_dir + folder + '/sharptni_output/sample_sankoff'
+		output_file = data_dir + folder + '/sharptni_output/sample_sankoff_summary.'
+		create_sharptni_sample_summary(host_id_map, input_dir, output_file)
+		# break
+
 def check_and_clean():
 	data_dir = 'dataset/'
 	folders = next(os.walk(data_dir))[1]
@@ -189,9 +221,12 @@ def check_and_clean():
 
 def main():
 	# create_sharptni_inputs_favites()
+	# create_sharptni_inputs_cdc()
 	# create_sharptni_outputs_favites()
-	convert_dots_to_egde_list_favites()
+	# create_sharptni_outputs_cdc()
+	# convert_dots_to_egde_list_favites()
 	# create_sankoff_sample_summary()
+	# create_sankoff_sample_summary_cdc()
 	# check_and_clean()
 
 if __name__ == "__main__": main()

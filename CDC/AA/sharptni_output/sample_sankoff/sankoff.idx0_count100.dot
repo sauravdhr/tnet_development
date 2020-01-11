@@ -1,0 +1,11 @@
+digraph N {
+	overlap="false"
+	rankdir="LR"
+	0 [label="1",width=1.2,height=1.2,style="",penwidth=3,color="#3243BA"]
+	1 [label="2",width=1.2,height=1.2,style="",penwidth=3,color="#0363E1"]
+	2 [label="3",width=1.2,height=1.2,style="",penwidth=3,color="#0D75DC"]
+	0 -> 1 [penwidth=1,color=black,label="3"]
+	0 -> 2 [penwidth=1,color=black,label="1"]
+	1 -> 0 [penwidth=1,color=black,label="2"]
+	2 -> 0 [penwidth=1,color=black,label="1"]
+}

@@ -229,6 +229,34 @@ def compare_sharptni_tnet_best_tree(threshold):
 
 	F1_file.close()
 
+def compare_sharptni_tnet_cdc(threshold):
+	data_dir = 'CDC/'
+	folders = next(os.walk(data_dir))[1]
+	folders.sort()
+
+	F1_file = open('results/sharptni/cdc.bestTree.sharptni.sankoff_sample.tnet.new.th.'+str(threshold)+'.csv', 'w+')
+	F1_file.write('dataset,sharp_prec,sharp_rec,sharp_f1,tnet_prec,tnet_rec,tnet_f1\n')
+
+	for folder in folders:
+		print('inside folder: ',folder)
+		F1 = []
+		sample_list = next(os.walk(data_dir + folder + '/sharptni_output'))[2]
+		sharptni_file = [idx for idx in sample_list if idx.startswith('sample_sankoff_summary')]
+		sharptni_file = sharptni_file[0]
+		th2 = int(sharptni_file.split('.')[1])
+		th2 = round(th2 * (threshold / 100))
+		print(th2)
+
+		real = set(cdc.get_true_transmission_edges(folder))
+		sharp = set(ge.get_mul_tnet_edges(data_dir + folder + '/sharptni_output/' + sharptni_file, th2))
+		tnet = set(ge.get_mul_tnet_edges(data_dir + folder + '/tnet_single_tree/single_tree.100.tnet_new', threshold))
+
+		F1.extend(get_prec_rec_f1(real, sharp))
+		F1.extend(get_prec_rec_f1(real, tnet))
+		F1_file.write('{},{},{},{},{},{},{}\n'.format(folder,F1[0],F1[1],F1[2],F1[3],F1[4],F1[5]))
+
+	F1_file.close()
+
 def compare_cdc_directed(threshold):
 	F1_file = open('results/cdc_directed_comparison/cdc.phyloscanner.tnet.new.tnet.bias.th.' + str(threshold) + '.csv', 'w+')
 	F1_file.write('dataset,phylo_prec,phylo_rec,phylo_f1,tnet_prec,tnet_rec,tnet_f1,tnet_bias_prec,tnet_bias_rec,tnet_bias_f1\n')
@@ -285,7 +313,8 @@ def partition_result():
 def main():
 	# compare_tnet_best_tree()
 	# compare_sharptni_best_tree()
-	compare_sharptni_tnet_best_tree(50)
+	# compare_sharptni_tnet_best_tree(50)
+	compare_sharptni_tnet_cdc(50)
 	# compare_tnet_single_run()
 	# compare_tnet_cdc_single_tree()
 	# compare_phyloscanner_tnet_best_tree(100)
