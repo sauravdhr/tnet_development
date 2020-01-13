@@ -234,7 +234,7 @@ def compare_sharptni_tnet_cdc(threshold):
 	folders = next(os.walk(data_dir))[1]
 	folders.sort()
 
-	F1_file = open('results/sharptni/cdc.bestTree.sharptni.sankoff_sample.tnet.new.th.'+str(threshold)+'.csv', 'w+')
+	F1_file = open('results/sharptni/cdc.bestTree.sharptni.sankoff_sample.tnet.new.rand.mod.th.'+str(threshold)+'.csv', 'w+')
 	F1_file.write('dataset,sharp_prec,sharp_rec,sharp_f1,tnet_prec,tnet_rec,tnet_f1\n')
 
 	for folder in folders:
@@ -249,7 +249,7 @@ def compare_sharptni_tnet_cdc(threshold):
 
 		real = set(cdc.get_true_transmission_edges(folder))
 		sharp = set(ge.get_mul_tnet_edges(data_dir + folder + '/sharptni_output/' + sharptni_file, th2))
-		tnet = set(ge.get_mul_tnet_edges(data_dir + folder + '/tnet_single_tree/single_tree.100.tnet_new', threshold))
+		tnet = set(ge.get_mul_tnet_edges(data_dir + folder + '/tnet_new_mod_rand_bootstrap/25.tnet', threshold))
 
 		F1.extend(get_prec_rec_f1(real, sharp))
 		F1.extend(get_prec_rec_f1(real, tnet))
