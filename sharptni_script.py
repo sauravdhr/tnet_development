@@ -11,9 +11,10 @@ def create_single_sharptni_input(input_file, output_folder):
 	input_tree = Phylo.read(input_file, 'newick')
 	input_tree.rooted = True
 
-	host_file = open(output_folder + '/host_file.txt', 'w+')
-	ptree_file = open(output_folder + '/ptree_file.txt', 'w+')
-	host_id_map = open(output_folder + '/host_id_map.txt', 'w+')
+	name = input_file.split('.')[1]
+	host_file = open(output_folder + '/host_file.' + name, 'w+')
+	ptree_file = open(output_folder + '/ptree_file.' + name, 'w+')
+	host_id_map = open(output_folder + '/host_id_map.' + name, 'w+')
 
 	host_id = {}
 	node_id = {}
@@ -43,11 +44,18 @@ def create_sharptni_inputs_favites():
 	folders = next(os.walk(data_dir))[1]
 
 	for folder in folders:
-		input_file = data_dir + folder + '/RAxML_output/RAxML_rootedTree.bestTree.favites'
-		output_folder = data_dir + folder + '/sharptni_input'
-		if not os.path.exists(output_folder):
-			os.mkdir(output_folder)
-		create_single_sharptni_input(input_file, output_folder)
+		input_folder = data_dir + folder + '/rooted_bootstrap_trees/'
+		files = next(os.walk(input_folder))[2]
+
+		for file_name in files:
+			input_file = input_folder + file_name
+			output_folder = data_dir + folder + '/sharptni_input_bootstrap'
+			if not os.path.exists(output_folder):
+				os.mkdir(output_folder)
+			create_single_sharptni_input(input_file, output_folder)
+			print(input_file, output_folder)
+			# break
+		# break
 
 def create_sharptni_inputs_cdc():
 	data_dir = 'CDC/'
@@ -213,14 +221,15 @@ def check_and_clean():
 
 	for folder in folders:
 		print(folder)
-		# new_dir = 'outputs/' + folder + '/sharptni/sample_sankoff'
-		new_dir = 'outputs/' + folder + '/sharptni/sankoff.png'
-		if os.path.exists(new_dir):
-			os.remove(new_dir)
-			# print(len(next(os.walk(new_dir))[2]))
+		old_dir = data_dir + folder + '/sharptni_input_bootstrap'
+		new_dir = data_dir + folder + '/sharptni_input_single'
+		if os.path.exists(old_dir):
+			# os.rename(old_dir, new_dir)
+			# os.remove(new_dir)
+			shutil.rmtree(old_dir)
 
 def main():
-	# create_sharptni_inputs_favites()
+	create_sharptni_inputs_favites()
 	# create_sharptni_inputs_cdc()
 	# create_sharptni_outputs_favites()
 	# create_sharptni_outputs_cdc()
