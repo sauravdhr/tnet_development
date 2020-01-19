@@ -108,16 +108,45 @@ def create_sample_sankoff_sharptni_output(input_folder, output_folder, times):
 		cmd = './SharpTNI/gamma {} {} 2> {}'.format(host_file, out_file, gamma_file)
 		# print(cmd)
 		os.system(cmd)
+
+def create_sample_sankoff_sharptni_output(input_folder, output_folder, name, times):
+	host_file = input_folder + '/host_file.' + name
+	ptree_file = input_folder + '/ptree_file.' + name
+	out_folder = output_folder + '/sample_sankoff'
+	if not os.path.exists(out_folder):
+		os.mkdir(out_folder)
+	out_file = out_folder + '/sankoff.'
+
+	cmd = './SharpTNI/sample_sankoff -l {} {} {} {}'.format(times, host_file, ptree_file, out_file)
+	print(cmd)
+	os.system(cmd)
+
+	sample_list = next(os.walk(out_folder))[2]
+	for sample in sample_list:
+		out_file = out_folder + '/' + sample
+		file_name = sample.replace('out', 'dot')
+		gamma_file = out_folder + '/' + file_name
+		cmd = './SharpTNI/gamma {} {} 2> {}'.format(host_file, out_file, gamma_file)
+		print(cmd)
+		os.system(cmd)
 	
 def create_sharptni_outputs_favites():
 	folders = next(os.walk('dataset/'))[1]
 	for folder in folders:
 		print(folder)
-		input_folder = 'dataset/' + folder + '/sharptni_input'
-		output_folder = 'outputs/' + folder + '/sharptni'
+		input_folder = 'dataset/' + folder + '/sharptni_input_bootstrap'
+		output_folder = 'outputs/' + folder + '/sharptni_bootstrap'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
-		create_sample_sankoff_sharptni_output(input_folder, output_folder, 100)
+		for name in range(100):
+			create_sample_sankoff_sharptni_output(input_folder, output_folder, str(name), 100)
+
+			host_id_map = input_folder + '/host_id_map.' + str(name)
+			input_dir = output_folder + '/sample_sankoff'
+			output_file = output_folder + '/sample_sankoff_summary.bootstrap_' + str(name) + '.'
+			create_sharptni_sample_summary(host_id_map, input_dir, output_file)
+			shutil.rmtree(input_dir)
+			# break
 		# break
 
 def create_sharptni_outputs_cdc():
@@ -221,17 +250,17 @@ def check_and_clean():
 
 	for folder in folders:
 		print(folder)
-		old_dir = data_dir + folder + '/sharptni_input_bootstrap'
-		new_dir = data_dir + folder + '/sharptni_input_single'
+		old_dir = 'outputs/' + folder + '/sharptni'
+		new_dir = 'outputs/' + folder + '/sharptni_single'
 		if os.path.exists(old_dir):
-			# os.rename(old_dir, new_dir)
+			os.rename(old_dir, new_dir)
 			# os.remove(new_dir)
-			shutil.rmtree(old_dir)
+			# shutil.rmtree(old_dir)
 
 def main():
-	create_sharptni_inputs_favites()
+	# create_sharptni_inputs_favites()
 	# create_sharptni_inputs_cdc()
-	# create_sharptni_outputs_favites()
+	create_sharptni_outputs_favites()
 	# create_sharptni_outputs_cdc()
 	# convert_dots_to_egde_list_favites()
 	# create_sankoff_sample_summary()
