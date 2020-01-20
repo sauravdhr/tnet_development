@@ -62,11 +62,16 @@ def create_sharptni_inputs_cdc():
 	folders = next(os.walk(data_dir))[1]
 
 	for folder in folders:
-		input_file = data_dir + folder + '/tnet_input/RAxML_rootedTree.25'
+		input_folder = data_dir + folder + '/tnet_input/'
 		output_folder = data_dir + folder + '/sharptni_input'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
-		create_single_sharptni_input(input_file, output_folder)
+		file_list = next(os.walk(input_folder))[2]
+
+		for file in file_list:
+			input_file = input_folder + file
+			create_single_sharptni_input(input_file, output_folder)
+			# print(input_file, output_folder)
 
 def create_single_sankoff_sharptni_output(input_folder, output_folder):
 	host_file = input_folder + '/host_file.txt'
@@ -157,7 +162,15 @@ def create_sharptni_outputs_cdc():
 		output_folder = 'CDC/' + folder + '/sharptni_output'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
-		create_sample_sankoff_sharptni_output(input_folder, output_folder, 100)
+		for name in range(26):
+			create_sample_sankoff_sharptni_output(input_folder, output_folder, str(name), 100)
+
+			host_id_map = input_folder + '/host_id_map.' + str(name)
+			input_dir = output_folder + '/sample_sankoff'
+			output_file = output_folder + '/sample_sankoff_summary.bootstrap_' + str(name) + '.'
+			create_sharptni_sample_summary(host_id_map, input_dir, output_file)
+			shutil.rmtree(input_dir)
+			# break
 		# break
 
 def convert_dot_file_to_mapped_edge_file(host_id_map, dot_file, edge_file):
@@ -260,8 +273,8 @@ def check_and_clean():
 def main():
 	# create_sharptni_inputs_favites()
 	# create_sharptni_inputs_cdc()
-	create_sharptni_outputs_favites()
-	# create_sharptni_outputs_cdc()
+	# create_sharptni_outputs_favites()
+	create_sharptni_outputs_cdc()
 	# convert_dots_to_egde_list_favites()
 	# create_sankoff_sample_summary()
 	# create_sankoff_sample_summary_cdc()

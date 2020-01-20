@@ -465,13 +465,13 @@ def create_undirected_tnet_bootstrap_summary(tree_folder, threshold):
 				result.write('{},{}\n'.format(x, y))
 
 def check_and_clean():
-	data_dir = 'outputs/'
+	data_dir = 'CDC/'
 	folders = next(os.walk(data_dir))[1]
 	count = 0
 
 	for folder in folders:
 		# print('Inside',folder)
-		check_folder = 'outputs/' + folder + '/sharptni_bootstrap'
+		check_folder = data_dir + folder + '/sharptni_output'
 		if os.path.exists(check_folder):
 			# original = '/home/saurav/research/FAVITES_compare_TNet_v2/outputs/'+ folder +'/tnet_best_tree/bestTree.1.tnet_new'
 			# copy = 'outputs/'+ folder +'/tnet_best_tree/bestTree.1.tnet_new'
@@ -489,7 +489,7 @@ def check_and_clean():
 			# 	# os.remove(check_file)
 			# 	shutil.rmtree(check_folder + '/tnet_new_10_bootstrap')
 
-	print('Done',count, 'out of:', len(folders) * 100)
+	print('Done',count, 'out of:', len(folders) * 26)
 
 def main():
 	# get_sequences_and_network()
