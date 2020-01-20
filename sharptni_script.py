@@ -5,7 +5,7 @@ from Bio import Phylo
 import get_edges as ge
 import operator
 import os, shutil, sys
-import threading
+import threading, math
 
 def create_single_sharptni_input(input_file, output_folder):
 	input_tree = Phylo.read(input_file, 'newick')
@@ -246,15 +246,53 @@ def create_sankoff_sample_summary():
 		create_sharptni_sample_summary(host_id_map, input_dir, output_file)
 		# break
 
-def create_sankoff_sample_summary_cdc():
+def create_sharptni_single_outbreak_summary(input_folder, output_file, threshold):
+	file_list = next(os.walk(input_folder))[2]
+	edge_dict = {}
+
+	for file in file_list:
+		th = int(file.split('.')[2])
+		th2 = math.ceil(th * (threshold / 100))
+		input_file = input_folder + '/' + file
+
+		edge_list = ge.get_mul_tnet_edges(input_file, th2)
+		for edge in edge_list:
+			if edge in edge_dict:
+				edge_dict[edge] += 1
+			else:
+				edge_dict[edge] = 1
+
+	edge_dict = dict(sorted(edge_dict.items(), key=operator.itemgetter(1),reverse=True))
+	# print(edge_dict)
+	result = open(output_file, 'w+')
+	for x, y in edge_dict.items():
+		result.write('{},{}\n'.format(x, y))
+
+
+def create_sankoff_sample_bootstrap_summary_cdc(threshold):
 	data_dir = 'CDC/'
 	folders = next(os.walk(data_dir))[1]
 	for folder in folders:
 		print(folder)
-		host_id_map = data_dir + folder + '/sharptni_input/host_id_map.txt'
-		input_dir = data_dir + folder + '/sharptni_output/sample_sankoff'
-		output_file = data_dir + folder + '/sharptni_output/sample_sankoff_summary.'
-		create_sharptni_sample_summary(host_id_map, input_dir, output_file)
+		input_folder = data_dir + folder + '/sharptni_output'
+		output_folder = data_dir + folder + '/sharptni_sankoff_sample_bootstrap_summary_directed/'
+		if not os.path.exists(output_folder):
+			os.mkdir(output_folder)
+		output_file = output_folder + 'sankoff_sample_bootstrap_th_' + str(threshold) + '_summary.csv'
+		create_sharptni_single_outbreak_summary(input_folder, output_file, threshold)
+		# break
+
+def create_sankoff_sample_bootstrap_summary_favites(threshold):
+	data_dir = 'outputs/'
+	folders = next(os.walk(data_dir))[1]
+	for folder in folders:
+		print(folder)
+		input_folder = data_dir + folder + '/sharptni_bootstrap'
+		output_folder = data_dir + folder + '/sharptni_sankoff_sample_bootstrap_summary_directed/'
+		if not os.path.exists(output_folder):
+			os.mkdir(output_folder)
+		output_file = output_folder + 'sankoff_sample_bootstrap_th_' + str(threshold) + '_summary.csv'
+		create_sharptni_single_outbreak_summary(input_folder, output_file, threshold)
 		# break
 
 def check_and_clean():
@@ -274,10 +312,11 @@ def main():
 	# create_sharptni_inputs_favites()
 	# create_sharptni_inputs_cdc()
 	# create_sharptni_outputs_favites()
-	create_sharptni_outputs_cdc()
+	# create_sharptni_outputs_cdc()
 	# convert_dots_to_egde_list_favites()
 	# create_sankoff_sample_summary()
-	# create_sankoff_sample_summary_cdc()
+	# create_sankoff_sample_bootstrap_summary_cdc(100)
+	create_sankoff_sample_bootstrap_summary_favites(100)
 	# check_and_clean()
 
 if __name__ == "__main__": main()
