@@ -1,4 +1,4 @@
-import shutil, os
+import shutil, os, math
 import get_edges as ge
 import cdc
 
@@ -157,6 +157,31 @@ def compare_phyloscanner_tnet_directed(bootstrap, threshold):
 
 	F1_file.close()
 
+def compare_sharptni_tnet_directed(bootstrap_th, sample_th):
+	data_dir = 'outputs/'
+	out_dir = '/home/saurav/research/FAVITES_compare_TNet_v2/outputs/'
+	folders = next(os.walk(data_dir))[1]
+	folders.sort()
+
+	F1_file = open('results/sharptni_directed_comparison/favites.sharptni.tnet.new.tnet.bias.sample_th.' + str(sample_th) + '.bootstrap_th.' + str(bootstrap_th) + '.csv', 'w+')
+	F1_file.write('dataset,sharp_prec,sharp_rec,sharp_f1,tnet_prec,tnet_rec,tnet_f1,tnet_bias_prec,tnet_bias_rec,tnet_bias_f1\n')
+
+	for folder in folders:
+		print('inside folder: ',folder)
+		F1 = []
+
+		real = set(ge.get_real_edges('dataset/' + folder + '/transmission_network.txt'))
+		sharptni = set(ge.get_tnet_summary_edges(data_dir + folder + '/sharptni_sankoff_sample_bootstrap_summary_directed/sankoff_sample_bootstrap_th_' + str(sample_th) + '_summary.csv', bootstrap_th))
+		tnet = set(ge.get_tnet_summary_edges(out_dir + folder + '/tnet_new_bootstrap_summary_directed/tnet_new_100_bootstrap_th_'+str(sample_th)+'_summary.csv', bootstrap_th))
+		tnet_bias = set(ge.get_tnet_summary_edges(data_dir + folder + '/tnet_new_with_bias_bootstrap_summary_directed/tnet_new_100_bootstrap_with_bias_th_'+str(sample_th)+'_summary.csv', bootstrap_th))
+
+		F1.extend(get_prec_rec_f1(real, sharptni))
+		F1.extend(get_prec_rec_f1(real, tnet))
+		F1.extend(get_prec_rec_f1(real, tnet_bias))
+		F1_file.write('{},{},{},{},{},{},{},{},{},{}\n'.format(folder,F1[0],F1[1],F1[2],F1[3],F1[4],F1[5],F1[6],F1[7],F1[8]))
+
+	F1_file.close()
+
 def compare_phyloscanner_tnet_undirected(bootstrap, threshold):
 	data_dir = 'outputs/'
 	folders = next(os.walk(data_dir))[1]
@@ -278,6 +303,28 @@ def compare_cdc_directed(threshold):
 
 	F1_file.close()
 
+def compare_cdc_sharptni_tnet_directed(bootstrap_th, sample_th):
+	F1_file = open('results/sharptni_directed_comparison/cdc.sharptni.tnet.new.tnet.bias.sample_th.' + str(sample_th) + '.bootstrap_th.' + str(bootstrap_th) + '.csv', 'w+')
+	F1_file.write('dataset,sharp_prec,sharp_rec,sharp_f1,tnet_prec,tnet_rec,tnet_f1,tnet_bias_prec,tnet_bias_rec,tnet_bias_f1\n')
+
+	for outbreak in cdc.known_outbreaks:
+		print('inside outbreak:',outbreak)
+		F1 = []
+		boot_th = len(next(os.walk('CDC/' + outbreak + '/tnet_input'))[2])
+		boot_th = math.ceil(boot_th * (bootstrap_th / 100))
+
+		real = set(cdc.get_true_transmission_edges(outbreak))
+		sharptni = set(ge.get_tnet_summary_edges('CDC/' + outbreak + '/sharptni_sankoff_sample_bootstrap_summary_directed/sankoff_sample_bootstrap_th_' + str(sample_th) + '_summary.csv', boot_th))
+		tnet = set(ge.get_tnet_summary_edges('CDC/' + outbreak + '/tnet_new_bootstrap_summary_directed/tnet_new_bootstrap_th_' + str(sample_th) + '_summary.csv', boot_th))
+		tnet_bias = set(ge.get_tnet_summary_edges('CDC/' + outbreak + '/tnet_new_bootstrap_with_bias_summary_directed/tnet_new_bootstrap_th_' + str(sample_th) + '_summary.csv', boot_th))
+
+		F1.extend(get_prec_rec_f1(real, sharptni))
+		F1.extend(get_prec_rec_f1(real, tnet))
+		F1.extend(get_prec_rec_f1(real, tnet_bias))
+		F1_file.write('{},{},{},{},{},{},{},{},{},{}\n'.format(outbreak,F1[0],F1[1],F1[2],F1[3],F1[4],F1[5],F1[6],F1[7],F1[8]))
+
+	F1_file.close()
+
 def compare_cdc_undirected(threshold):
 	F1_file = open('results/cdc_undirected_comparison/cdc.phyloscanner.tnet.new.th.' + str(threshold) + '.csv', 'w+')
 	F1_file.write('dataset,phylo_prec,phylo_rec,phylo_f1,tnet_prec,tnet_rec,tnet_f1\n')
@@ -314,13 +361,15 @@ def main():
 	# compare_tnet_best_tree()
 	# compare_sharptni_best_tree()
 	# compare_sharptni_tnet_best_tree(50)
-	compare_sharptni_tnet_cdc(50)
+	# compare_sharptni_tnet_cdc(50)
 	# compare_tnet_single_run()
 	# compare_tnet_cdc_single_tree()
 	# compare_phyloscanner_tnet_best_tree(100)
 	# compare_phyloscanner_tnet_directed(100, 50)
 	# compare_phyloscanner_tnet_undirected(100, 30)
+	# compare_sharptni_tnet_directed(50, 40)
 	# compare_cdc_directed(80)
+	compare_cdc_sharptni_tnet_directed(50, 40)
 	# compare_cdc_undirected(40)
 	# partition_result()
 

@@ -152,7 +152,7 @@ def check_and_clean():
 def main():
 	# run_new_tnet_cdc_multithreaded(100)
 	# run_new_tnet_cdc_single_tree(100)
-	create_cdc_tnet_summary_directed(50)
+	create_cdc_tnet_summary_directed(40)
 	# create_cdc_tnet_summary_undirected(40)
 	# check_and_clean()
 	# get_true_transmission_edges('BJ')
