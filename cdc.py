@@ -177,6 +177,51 @@ def run_raxml_with_threading(bootstrap):
 	for i in range(len(t)):
 		t[i].join()
 
+def create_bootstrap_trees():
+	data_dir = 'CDC/'
+	folders = next(os.walk(data_dir))[1]
+
+	for folder in folders:
+		print('Inside',folder)
+		bootstrap_file = data_dir + folder + '/RAxML_output_100/RAxML_bootstrap.favites'
+		bootstrap_folder = data_dir + folder + '/RAxML_output_100/bootstrap_trees'
+		if not os.path.exists(bootstrap_file):
+			continue
+		if not os.path.exists(bootstrap_folder):
+			os.mkdir(bootstrap_folder)
+
+		f = open(bootstrap_file)
+		tree_list = f.readlines()
+
+		for i in range(len(tree_list)):
+			file = open(bootstrap_folder + '/' + str(i) + '.bootstrap.tree', 'w')
+			file.write(tree_list[i])
+		# break
+
+def root_bootstrap_trees():
+	data_dir = 'CDC/'
+	folders = next(os.walk(data_dir))[1]
+
+	for folder in folders:
+		bootstrap_folder = data_dir + folder + '/RAxML_output_100/bootstrap_trees'
+		rooted_bootstrap_folder = data_dir + folder + '/rooted_bootstrap_trees'
+		bootstrap_trees = next(os.walk(bootstrap_folder))[2]
+		output_folder = os.path.abspath(rooted_bootstrap_folder)
+		if not os.path.exists(output_folder):
+			os.mkdir(output_folder)
+
+		for tree in bootstrap_trees:
+			input_tree = bootstrap_folder + '/' + tree
+			i = int(tree.split('.')[0])
+			cmd = 'raxmlHPC -f I -m GTRGAMMA -t {} -n {} -w {}'.format(input_tree, str(i), output_folder)
+			# print(cmd)
+			os.system(cmd)
+			try:
+				os.remove(output_folder + '/RAxML_info.' + str(i))
+			except:
+				print('RAxML_info does not exist')
+		# break
+
 def main():
 	run_raxml_with_threading(100)
 	# run_new_tnet_cdc_multithreaded(100)
