@@ -8,6 +8,7 @@ import operator
 import shutil, os
 import get_edges as ge
 import main_script as ms
+import threading
 
 # Global Variables
 known_outbreaks = ['AA', 'AC', 'AI', 'AJ', 'AQ', 'AW', 'BA', 'BB', 'BC', 'BJ']
@@ -148,11 +149,39 @@ def check_and_clean():
 
 	print('Progress:', count, 'out of', total*6)
 
+def multithreadings(input_file, output_dir, bootstrap):
+	cmd = 'raxmlHPC -f a -m GTRGAMMA -p 12345 -x 12345 -s {} -w {} -N {} -n favites -k'.format(input_file, output_dir, bootstrap)
+	# print(cmd)
+	os.system(cmd)
+
+def run_raxml_with_threading(bootstrap):
+	data_dir = 'CDC/'
+	folders = next(os.walk(data_dir))[1]
+	t = []
+
+	for folder in folders:
+		RAxML_folder = os.path.abspath(data_dir + folder + '/RAxML_output_100')
+		fasta_file = os.path.abspath(data_dir + folder + '/sequences.fasta')
+		RAxML_info = RAxML_folder + '/RAxML_info.favites'
+		if not os.path.exists(RAxML_folder):
+			os.mkdir(RAxML_folder)
+		if os.path.exists(RAxML_info):
+			continue
+
+		t.append(threading.Thread(target=multithreadings, args=(fasta_file, RAxML_folder, bootstrap)))
+
+	# print('len', len(t))
+	for i in range(len(t)):
+		t[i].start()
+
+	for i in range(len(t)):
+		t[i].join()
 
 def main():
+	run_raxml_with_threading(100)
 	# run_new_tnet_cdc_multithreaded(100)
 	# run_new_tnet_cdc_single_tree(100)
-	create_cdc_tnet_summary_directed(40)
+	# create_cdc_tnet_summary_directed(40)
 	# create_cdc_tnet_summary_undirected(40)
 	# check_and_clean()
 	# get_true_transmission_edges('BJ')
