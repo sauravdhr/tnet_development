@@ -277,7 +277,7 @@ def main():
 	# root_bootstrap_trees()
 	# create_phyloscanner_input()
 	# run_phyloscanner_multithreaded()
-	run_new_tnet_cdc_multithreaded(100)
+	# run_new_tnet_cdc_multithreaded(100)
 	# run_new_tnet_cdc_single_tree(100)
 	# create_cdc_tnet_summary_directed(40)
 	# create_cdc_tnet_summary_undirected(40)
