@@ -83,8 +83,8 @@ def create_cdc_tnet_summary_directed(threshold):
 	for outbreak in known_outbreaks:
 		print('Inside', outbreak)
 
-		input_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_with_bias'
-		output_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_with_bias_summary_directed'
+		input_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_with_bias_100'
+		output_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_with_bias_100_summary_directed'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		edge_dict = {}
@@ -279,7 +279,7 @@ def main():
 	# run_phyloscanner_multithreaded()
 	# run_new_tnet_cdc_multithreaded(100)
 	# run_new_tnet_cdc_single_tree(100)
-	# create_cdc_tnet_summary_directed(40)
+	create_cdc_tnet_summary_directed(100)
 	# create_cdc_tnet_summary_undirected(40)
 	# check_and_clean()
 	# get_true_transmission_edges('BJ')
