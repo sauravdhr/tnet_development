@@ -446,8 +446,8 @@ def main():
 	input_tree = initialize_tree(args.INPUT_TREE_FILE)
 	initialize_leaf_nodes(input_tree)
 	initialize_internal_nodes(input_tree)
-	input_tree.root.name = choose_root_host_with_max_br_len(input_tree.root)
-	choose_internal_node_host_with_min(input_tree)
+	input_tree.root.name = choose_root_host(input_tree.root)
+	choose_internal_node_host_with_bias(input_tree)
 	transmission_edges = get_transmission_edges(input_tree)
 	write_transmission_edges(args.OUTPUT_FILE, input_tree.root.name, transmission_edges)
 
