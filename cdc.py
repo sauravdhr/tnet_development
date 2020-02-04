@@ -39,7 +39,7 @@ def run_new_tnet_cdc_multithreaded(times = 100):
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 			ms.run_tnet_new_single_folder(input_folder, output_folder, times)
-			break
+			# break
 
 def run_old_tnet_cdc(times = 100):
 	for outbreak in known_outbreaks:
@@ -61,7 +61,7 @@ def run_old_tnet_cdc_single_tree(times = 100):
 		output_folder = 'CDC/'+outbreak+'/tnet_single_tree/'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
-		
+
 		output_file = output_folder + 'single_tree.' + str(times) + '.tnet_old_fixed'
 		if not os.path.exists(output_file):
 			# print(input_file, output_file)
@@ -73,7 +73,7 @@ def run_new_tnet_cdc_single_tree(times = 100):
 		output_folder = 'CDC/'+outbreak+'/tnet_single_tree/'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
-		
+
 		output_file = output_folder + 'single_tree.' + str(times) + '.tnet_new_min'
 		if not os.path.exists(output_file):
 			# print(input_file, output_file)
