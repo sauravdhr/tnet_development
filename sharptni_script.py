@@ -136,8 +136,7 @@ def create_sample_sankoff_sharptni_output(input_folder, output_folder, name, tim
 		os.system(cmd)
 	
 def create_sharptni_outputs_favites():
-	# folders = next(os.walk('dataset/'))[1]
-	folders = ['SEIR01_sl250_mr025_nv10_1']
+	folders = next(os.walk('dataset/'))[1]
 	for folder in folders:
 		print(folder)
 		input_folder = 'dataset/' + folder + '/sharptni_input_bootstrap'
