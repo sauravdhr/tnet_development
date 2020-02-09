@@ -160,7 +160,7 @@ def create_sharptni_outputs_cdc():
 	for folder in folders:
 		print(folder)
 		input_folder = 'CDC/' + folder + '/sharptni_input_100'
-		output_folder = 'CDC/' + folder + '/sharptni_output_100'
+		output_folder = 'CDC/' + folder + '/sharptni_output_100_bootstrap_min_coinfection'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		for name in range(100):
@@ -169,7 +169,8 @@ def create_sharptni_outputs_cdc():
 			host_id_map = input_folder + '/host_id_map.' + str(name)
 			input_dir = output_folder + '/sample_sankoff'
 			output_file = output_folder + '/sample_sankoff_summary.bootstrap_' + str(name) + '.'
-			create_sharptni_sample_summary(host_id_map, input_dir, output_file)
+			# create_sharptni_sample_summary(host_id_map, input_dir, output_file)
+			create_sharptni_sample_summary_min_coinfection(host_id_map, input_dir, output_file)
 			shutil.rmtree(input_dir)
 			# break
 		# break
@@ -329,8 +330,8 @@ def create_sankoff_sample_bootstrap_summary_favites(threshold):
 	folders = next(os.walk(data_dir))[1]
 	for folder in folders:
 		print(folder)
-		input_folder = data_dir + folder + '/sharptni_bootstrap'
-		output_folder = data_dir + folder + '/sharptni_sankoff_sample_bootstrap_summary_directed/'
+		input_folder = data_dir + folder + '/sharptni_bootstrap_min_coinfection'
+		output_folder = data_dir + folder + '/sharptni_bootstrap_min_coinfection_summary_directed/'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		output_file = output_folder + 'sankoff_sample_bootstrap_th_' + str(threshold) + '_summary.csv'
@@ -353,8 +354,8 @@ def check_and_clean():
 def main():
 	# create_sharptni_inputs_favites()
 	# create_sharptni_inputs_cdc()
-	create_sharptni_outputs_favites()
-	# create_sharptni_outputs_cdc()
+	# create_sharptni_outputs_favites()
+	create_sharptni_outputs_cdc()
 	# convert_dots_to_egde_list_favites()
 	# create_sankoff_sample_summary()
 	# create_sankoff_sample_bootstrap_summary_cdc(100)
