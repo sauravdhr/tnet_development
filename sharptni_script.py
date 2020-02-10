@@ -175,6 +175,63 @@ def create_sharptni_outputs_cdc():
 			# break
 		# break
 
+def get_single_sharptni_sample_min_coinfection(host_id_map, input_dir, output_file):
+	host_list = []
+	f = open(host_id_map)
+	for line in f.readlines():
+		parts = line.rstrip().split(',')
+		host_list.append(parts[0])
+	f.close()
+
+	sample_list = [x for x in os.listdir(input_dir) if x.endswith(".dot")]
+	coinfection_list = []
+	for sample in sample_list:
+		with open(input_dir + '/' + sample) as file:
+			data = file.read().replace('\n', '')
+			coinfection_list.append(data.count('->'))
+
+	min_coinfection = min(coinfection_list)
+	min_index = coinfection_list.index(min_coinfection)
+	print('coinfection_list', coinfection_list)
+	print('min_coinfection', min_coinfection)
+	print('min_index', min_index)
+
+	edge_dict = {}
+		
+	f = open(input_dir + '/' + sample_list[min_index])
+	for line in f.readlines():
+		if '->' in line:
+			parts = line.strip().split(' ')
+			h1 = int(parts[0])
+			h2 = int(parts[2])
+			edge = host_list[h1] + '->' + host_list[h2]
+			if edge in edge_dict:
+				edge_dict[edge] += 1
+			else:
+				edge_dict[edge] = 1
+	f.close()
+
+	# print(edge_dict)
+	f = open(output_file, 'w+')
+	for x, y in edge_dict.items():
+		f.write('{}\t{}\n'.format(x, y))
+
+def create_sharptni_single_tree_single_run_min_coinfection_favites():
+	folders = next(os.walk('dataset/'))[1]
+	# folders = ['SEIR01_sl250_mr025_nv10_3']
+	for folder in folders:
+		print(folder)
+		input_folder = 'dataset/' + folder + '/sharptni_input_single'
+		output_folder = 'outputs/' + folder + '/sharptni_single'
+		if not os.path.exists(output_folder):
+			os.mkdir(output_folder)
+
+		host_id_map = input_folder + '/host_id_map.txt'
+		input_dir = output_folder + '/sample_sankoff'
+		output_file = output_folder + '/bestTree_sankoff_min_coinfection.1'
+		get_single_sharptni_sample_min_coinfection(host_id_map, input_dir, output_file)
+		# break
+
 def convert_dot_file_to_mapped_edge_file(host_id_map, dot_file, edge_file):
 	host_list = []
 	f = open(host_id_map)
@@ -358,7 +415,8 @@ def main():
 	# create_sharptni_outputs_cdc()
 	# convert_dots_to_egde_list_favites()
 	# create_sankoff_sample_summary()
-	create_sankoff_sample_bootstrap_summary_cdc(80)
+	create_sharptni_single_tree_single_run_min_coinfection_favites()
+	# create_sankoff_sample_bootstrap_summary_cdc(80)
 	# create_sankoff_sample_bootstrap_summary_favites(100)
 	# check_and_clean()
 

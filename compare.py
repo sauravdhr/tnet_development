@@ -417,6 +417,27 @@ def compare_cdc_undirected(threshold):
 
 	F1_file.close()
 
+def compare_favites_sharptni_tnet_new_tnet_bias_single_tree_single_run():
+	F1_file = open('results/single_tree_sharptni/favites.sharptni.min.coinf.tnet.new.tnet.bias.single_tree.single_run.csv', 'w+')
+	F1_file.write('dataset,sharp_prec,sharp_rec,sharp_f1,tnet_prec,tnet_rec,tnet_f1,tnet_bias_prec,tnet_bias_rec,tnet_bias_f1\n')
+
+	folders = next(os.walk('outputs/'))[1]
+	for folder in folders:
+		print('inside folder:', folder)
+		F1 = []
+
+		real = set(ge.get_real_edges('dataset/' + folder + '/transmission_network.txt'))
+		sharptni = set(ge.get_mul_tnet_edges('outputs/' + folder + '/sharptni_single/bestTree_sankoff_min_coinfection.1', 1))
+		tnet = set(ge.get_mul_tnet_edges('outputs/' + folder + '/tnet_best_tree/bestTree.1.tnet_new', 1))
+		tnet_bias = set(ge.get_mul_tnet_edges('outputs/' + folder + '/tnet_best_tree/bestTree.1.tnet_new_with_bias', 1))
+
+		F1.extend(get_prec_rec_f1(real, sharptni))
+		F1.extend(get_prec_rec_f1(real, tnet))
+		F1.extend(get_prec_rec_f1(real, tnet_bias))
+		F1_file.write('{},{},{},{},{},{},{},{},{},{}\n'.format(folder,F1[0],F1[1],F1[2],F1[3],F1[4],F1[5],F1[6],F1[7],F1[8]))
+
+	F1_file.close()
+
 def partition_result():
 	f = open('results/favites_directed_comparison/bootstrap.100.phyloscanner.tnet.new.th.50.csv')
 	# f.readline()
@@ -446,7 +467,8 @@ def main():
 	# compare_cdc_sharptni_tnet_directed(50, 40)
 	# compare_cdc_phyloscanner_sharptni_tnet_directed(50, 50)
 	# compare_favites_phyloscanner_sharptni_tnet_new_tnet_bias_directed(50, 100)
-	compare_cdc_phyloscanner_sharptni_tnet_new_tnet_bias_directed(50, 100)
+	# compare_cdc_phyloscanner_sharptni_tnet_new_tnet_bias_directed(50, 100)
+	compare_favites_sharptni_tnet_new_tnet_bias_single_tree_single_run()
 	# compare_cdc_undirected(40)
 	# partition_result()
 
