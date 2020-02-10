@@ -35,7 +35,7 @@ def get_true_transmission_edges(outbreak):
 def run_new_tnet_cdc_multithreaded(times = 100):
 	for outbreak in known_outbreaks:
 		input_folder = 'CDC/' + outbreak + '/rooted_bootstrap_trees_100'
-		output_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_with_bias_100'
+		output_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_100'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 			ms.run_tnet_new_single_folder(input_folder, output_folder, times)
@@ -83,8 +83,8 @@ def create_cdc_tnet_summary_directed(threshold):
 	for outbreak in known_outbreaks:
 		print('Inside', outbreak)
 
-		input_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_with_bias_100'
-		output_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_with_bias_100_summary_directed'
+		input_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_100'
+		output_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_100_summary_directed'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		edge_dict = {}

@@ -352,6 +352,30 @@ def compare_favites_phyloscanner_sharptni_tnet_new_tnet_bias_directed(bootstrap_
 
 	F1_file.close()
 
+def compare_cdc_phyloscanner_sharptni_tnet_new_tnet_bias_directed(bootstrap_th, sample_th):
+	F1_file = open('results/sharptni_min_coinfection_directed_comparison/cdc.phyloscanner.sharptni.min.coinf.tnet.new.tnet.bias.sample_th.' + str(sample_th) + '.bootstrap_th.' + str(bootstrap_th) + '.csv', 'w+')
+	F1_file.write('dataset,phylo_prec,phylo_rec,phylo_f1,sharp_prec,sharp_rec,sharp_f1,tnet_prec,tnet_rec,tnet_f1,tnet_bias_prec,tnet_bias_rec,tnet_bias_f1\n')
+
+	for outbreak in cdc.known_outbreaks:
+		print('inside folder:', outbreak)
+		F1 = []
+		boot_th = len(next(os.walk('CDC/' + outbreak + '/rooted_bootstrap_trees_100'))[2])
+		boot_th = math.ceil(boot_th * (bootstrap_th / 100))
+
+		real = set(cdc.get_true_transmission_edges(outbreak))
+		phylo = set(ge.get_phyloscanner_summary_trans_edges('CDC/' + outbreak + '/phyloscanner_output_100/CDC_hostRelationshipSummary.csv', boot_th))
+		sharptni = set(ge.get_tnet_summary_edges('CDC/' + outbreak + '/sharptni_sankoff_sample_100_bootstrap_min_coinfection_summary_directed/sankoff_sample_bootstrap_th_' + str(sample_th) + '_summary.csv', boot_th))
+		tnet = set(ge.get_tnet_summary_edges('CDC/' + outbreak + '/tnet_new_bootstrap_100_summary_directed/tnet_new_bootstrap_th_' + str(sample_th) + '_summary.csv', boot_th))
+		tnet_bias = set(ge.get_tnet_summary_edges('CDC/' + outbreak + '/tnet_new_bootstrap_with_bias_100_summary_directed/tnet_new_bootstrap_th_' + str(sample_th) + '_summary.csv', boot_th))
+
+		F1.extend(get_prec_rec_f1(real, phylo))
+		F1.extend(get_prec_rec_f1(real, sharptni))
+		F1.extend(get_prec_rec_f1(real, tnet))
+		F1.extend(get_prec_rec_f1(real, tnet_bias))
+		F1_file.write('{},{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(outbreak,F1[0],F1[1],F1[2],F1[3],F1[4],F1[5],F1[6],F1[7],F1[8],F1[9],F1[10],F1[11]))
+
+	F1_file.close()
+
 def compare_cdc_phyloscanner_sharptni_tnet_directed(bootstrap_th, sample_th):
 	F1_file = open('results/sharptni_directed_comparison/cdc.phyloscanner.sharptni.tnet.new.tnet.bias.sample_th.' + str(sample_th) + '.bootstrap_th.' + str(bootstrap_th) + '.csv', 'w+')
 	F1_file.write('dataset,phylo_prec,phylo_rec,phylo_f1,sharp_prec,sharp_rec,sharp_f1,tnet_bias_prec,tnet_bias_rec,tnet_bias_f1\n')
@@ -421,7 +445,8 @@ def main():
 	# compare_cdc_directed(80)
 	# compare_cdc_sharptni_tnet_directed(50, 40)
 	# compare_cdc_phyloscanner_sharptni_tnet_directed(50, 50)
-	compare_favites_phyloscanner_sharptni_tnet_new_tnet_bias_directed(50, 100)
+	# compare_favites_phyloscanner_sharptni_tnet_new_tnet_bias_directed(50, 100)
+	compare_cdc_phyloscanner_sharptni_tnet_new_tnet_bias_directed(50, 100)
 	# compare_cdc_undirected(40)
 	# partition_result()
 

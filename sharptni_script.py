@@ -317,8 +317,8 @@ def create_sankoff_sample_bootstrap_summary_cdc(threshold):
 	folders = next(os.walk(data_dir))[1]
 	for folder in folders:
 		print(folder)
-		input_folder = data_dir + folder + '/sharptni_output_100'
-		output_folder = data_dir + folder + '/sharptni_sankoff_sample_100_bootstrap_summary_directed/'
+		input_folder = data_dir + folder + '/sharptni_output_100_bootstrap_min_coinfection'
+		output_folder = data_dir + folder + '/sharptni_sankoff_sample_100_bootstrap_min_coinfection_summary_directed/'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		output_file = output_folder + 'sankoff_sample_bootstrap_th_' + str(threshold) + '_summary.csv'
@@ -355,10 +355,10 @@ def main():
 	# create_sharptni_inputs_favites()
 	# create_sharptni_inputs_cdc()
 	# create_sharptni_outputs_favites()
-	create_sharptni_outputs_cdc()
+	# create_sharptni_outputs_cdc()
 	# convert_dots_to_egde_list_favites()
 	# create_sankoff_sample_summary()
-	# create_sankoff_sample_bootstrap_summary_cdc(100)
+	create_sankoff_sample_bootstrap_summary_cdc(80)
 	# create_sankoff_sample_bootstrap_summary_favites(100)
 	# check_and_clean()
 
