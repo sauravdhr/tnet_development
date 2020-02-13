@@ -467,8 +467,8 @@ def main():
 	# compare_cdc_sharptni_tnet_directed(50, 40)
 	# compare_cdc_phyloscanner_sharptni_tnet_directed(50, 50)
 	# compare_favites_phyloscanner_sharptni_tnet_new_tnet_bias_directed(50, 100)
-	# compare_cdc_phyloscanner_sharptni_tnet_new_tnet_bias_directed(50, 100)
-	compare_favites_sharptni_tnet_new_tnet_bias_single_tree_single_run()
+	compare_cdc_phyloscanner_sharptni_tnet_new_tnet_bias_directed(50, 100)
+	# compare_favites_sharptni_tnet_new_tnet_bias_single_tree_single_run()
 	# compare_cdc_undirected(40)
 	# partition_result()
 

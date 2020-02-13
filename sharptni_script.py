@@ -294,6 +294,22 @@ def create_sharptni_sample_summary(host_id_map, input_dir, output_file):
 	for x, y in edge_dict.items():
 		f.write('{}\t{}\n'.format(x, y))
 
+def get_best_tree_sharptni_sample_summary_min_coinfection():
+	folders = next(os.walk('dataset/'))[1]
+	# folders = ['SEIR01_sl250_mr025_nv10_3']
+	for folder in folders:
+		print(folder)
+		input_folder = 'dataset/' + folder + '/sharptni_input_single'
+		output_folder = 'outputs/' + folder + '/sharptni_single'
+		if not os.path.exists(output_folder):
+			os.mkdir(output_folder)
+
+		host_id_map = input_folder + '/host_id_map.txt'
+		input_dir = output_folder + '/sample_sankoff'
+		output_file = output_folder + '/bestTree_sankoff_min_coinfection.100_sample.'
+		create_sharptni_sample_summary_min_coinfection(host_id_map, input_dir, output_file)
+		# break
+
 def create_sharptni_sample_summary_min_coinfection(host_id_map, input_dir, output_file):
 	host_list = []
 	f = open(host_id_map)
@@ -311,6 +327,9 @@ def create_sharptni_sample_summary_min_coinfection(host_id_map, input_dir, outpu
 
 	min_coinfection = min(coinfection_list)
 	min_coinfection_sample_count = coinfection_list.count(min_coinfection)
+	# print('coinfection_list', coinfection_list)
+	# print('min_coinfection', min_coinfection)
+	# print('min_coinfection_sample_count', min_coinfection_sample_count)
 	output_file += str(min_coinfection_sample_count)
 	edge_dict = {}
 
@@ -415,9 +434,10 @@ def main():
 	# create_sharptni_outputs_cdc()
 	# convert_dots_to_egde_list_favites()
 	# create_sankoff_sample_summary()
-	create_sharptni_single_tree_single_run_min_coinfection_favites()
+	# create_sharptni_single_tree_single_run_min_coinfection_favites()
 	# create_sankoff_sample_bootstrap_summary_cdc(80)
 	# create_sankoff_sample_bootstrap_summary_favites(100)
+	get_best_tree_sharptni_sample_summary_min_coinfection()
 	# check_and_clean()
 
 if __name__ == "__main__": main()
