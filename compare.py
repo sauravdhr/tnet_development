@@ -467,13 +467,13 @@ def compare_favites_sharptni_tnet_new_tnet_bias_single_tree_single_run():
 	F1_file.close()
 
 def partition_result():
-	f = open('results/favites_directed_comparison/bootstrap.100.phyloscanner.tnet.new.th.50.csv')
+	f = open('results/sharptni_min_coinfection_directed_comparison/favites.phyloscanner.sharptni.min.coinf.tnet.new.tnet.bias.sample_th.50.bootstrap_th.50.csv')
 	# f.readline()
-	result = open('results/favites_directed_comparison/bootstrap.100.phyloscanner.tnet.new.th.50/SEIR01.csv', 'w+')
+	result = open('results/sharptni_min_coinfection_directed_comparison/favites_sample_th_50_boot_th_50/nv20.csv', 'w+')
 	result.write(f.readline())
 
 	for line in f.readlines():
-		if 'SEIR01_' in line:
+		if '_nv20_' in line:
 			result.write(line)
 
 	f.close()
@@ -497,9 +497,9 @@ def main():
 	# compare_favites_phyloscanner_sharptni_tnet_new_tnet_bias_directed(50, 100)
 	# compare_cdc_phyloscanner_sharptni_tnet_new_tnet_bias_directed(50, 100)
 	# compare_favites_sharptni_tnet_new_tnet_bias_single_tree_single_run()
-	compare_favites_best_tree_sharptni_tnet_new_tnet_bias_directed(100)
+	# compare_favites_best_tree_sharptni_tnet_new_tnet_bias_directed(100)
 	# compare_cdc_undirected(40)
-	# partition_result()
+	partition_result()
 
 
 
