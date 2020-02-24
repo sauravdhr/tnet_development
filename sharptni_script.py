@@ -334,7 +334,7 @@ def create_sharptni_sample_summary_min_coinfection(host_id_map, input_dir, outpu
 	edge_dict = {}
 
 	for i in range(len(sample_list)):
-		if coinfection_list[i] == min_coinfection:			
+		if coinfection_list[i] == min_coinfection:
 			f = open(input_dir + '/' + sample_list[i])
 			for line in f.readlines():
 				if '->' in line:
