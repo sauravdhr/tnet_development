@@ -134,7 +134,7 @@ def create_sample_sankoff_sharptni_output(input_folder, output_folder, name, tim
 		cmd = './SharpTNI/gamma {} {} 2> {}'.format(host_file, out_file, gamma_file)
 		print(cmd)
 		os.system(cmd)
-	
+
 def create_sharptni_outputs_favites():
 	folders = next(os.walk('dataset/'))[1]
 	for folder in folders:
@@ -197,7 +197,7 @@ def get_single_sharptni_sample_min_coinfection(host_id_map, input_dir, output_fi
 	print('min_index', min_index)
 
 	edge_dict = {}
-		
+
 	f = open(input_dir + '/' + sample_list[min_index])
 	for line in f.readlines():
 		if '->' in line:
@@ -417,15 +417,19 @@ def create_sankoff_sample_bootstrap_summary_favites(threshold):
 def check_and_clean():
 	data_dir = 'dataset/'
 	folders = next(os.walk(data_dir))[1]
+	count = 0
 
 	for folder in folders:
-		print(folder)
-		old_dir = 'outputs/' + folder + '/sharptni'
-		new_dir = 'outputs/' + folder + '/sharptni_single'
+		# print(folder)
+		old_dir = 'outputs/' + folder + '/tnet_new_100_bootstrap_with_bias_min_coinfection'
+		# new_dir = 'outputs/' + folder + '/sharptni_single'
 		if os.path.exists(old_dir):
-			os.rename(old_dir, new_dir)
+			count += len(next(os.walk(old_dir))[2])
+			# os.rename(old_dir, new_dir)
 			# os.remove(new_dir)
 			# shutil.rmtree(old_dir)
+	print("Total folders", len(folders))
+	print("Done", count, "out of", len(folders)*100)
 
 def main():
 	# create_sharptni_inputs_favites()
@@ -437,7 +441,7 @@ def main():
 	# create_sharptni_single_tree_single_run_min_coinfection_favites()
 	# create_sankoff_sample_bootstrap_summary_cdc(80)
 	# create_sankoff_sample_bootstrap_summary_favites(100)
-	get_best_tree_sharptni_sample_summary_min_coinfection()
-	# check_and_clean()
+	# get_best_tree_sharptni_sample_summary_min_coinfection()
+	check_and_clean()
 
 if __name__ == "__main__": main()
