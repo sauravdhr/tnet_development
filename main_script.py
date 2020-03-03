@@ -5,6 +5,7 @@ from Bio import SeqIO
 import get_edges as ge
 import operator
 import os, shutil, sys
+import sharptni_script as sh
 import threading
 
 def get_sequences_and_network():
@@ -527,6 +528,19 @@ def create_undirected_tnet_bootstrap_summary(tree_folder, threshold):
 			for x, y in edge_dict.items():
 				result.write('{},{}\n'.format(x, y))
 
+def create_directed_tnet_mininfection_bootstrap_summary_favites(threshold):
+	data_dir = 'outputs/'
+	folders = next(os.walk(data_dir))[1]
+	for folder in folders:
+		print(folder)
+		input_folder = data_dir + folder + '/tnet_new_100_bootstrap_with_bias_min_coinfection'
+		output_folder = data_dir + folder + '/tnet_new_100_bootstrap_with_bias_min_coinfection_summary_directed/'
+		if not os.path.exists(output_folder):
+			os.mkdir(output_folder)
+		output_file = output_folder + 'tnet_bootstrap_th_' + str(threshold) + '_summary.csv'
+		sh.create_sharptni_single_outbreak_summary(input_folder, output_file, threshold)
+		# break
+
 def check_and_clean():
 	data_dir = 'outputs/'
 	folders = next(os.walk(data_dir))[1]
@@ -534,7 +548,7 @@ def check_and_clean():
 
 	for folder in folders:
 		print('Inside',folder)
-		check_folder = data_dir + folder + '/tnet_new_100_bootstrap_with_bias_min_coinfection'
+		check_folder = data_dir + folder + '/tnet_new_100_bootstrap_with_bias_min_coinfection_summary_directed'
 		if os.path.exists(check_folder):
 			# original = '/home/saurav/research/FAVITES_compare_TNet_v2/outputs/'+ folder +'/tnet_best_tree/bestTree.1.tnet_new'
 			# copy = 'outputs/'+ folder +'/tnet_best_tree/bestTree.1.tnet_new'
@@ -542,9 +556,7 @@ def check_and_clean():
 			# 	shutil.copy(original, copy)
 			# count += 1
 			file_list = next(os.walk(check_folder))[2]
-			print('Len',len(file_list))
-			if len(file_list) == 100:
-				count += 1
+			count += len(file_list)
 			# for file in file_list:
 			# 	if "tnet_new_with_min_bug_fixed" in file:
 			# 		check_file = check_folder + '/' + file
@@ -554,7 +566,7 @@ def check_and_clean():
 			# 	# os.remove(check_file)
 			# 	shutil.rmtree(check_folder + '/tnet_new_10_bootstrap')
 
-	print('Done',count, 'out of:', len(folders))
+	print('Done',count, 'out of:', len(folders)*4)
 
 def main():
 	# get_sequences_and_network()
@@ -567,12 +579,13 @@ def main():
 	# run_phyloscanner(50)
 	# run_phyloscanner_multithreaded(50)
 	# run_tnet_old_multithreaded()
-	run_tnet_new_multithreaded()
+	# run_tnet_new_multithreaded()
 	# create_tnet_bootstrap_output(10)
 	# create_tnet_bootstrap_output(50)
+	# create_directed_tnet_mininfection_bootstrap_summary_favites(100)
 	# create_directed_tnet_bootstrap_summary('tnet_new_100_bootstrap_with_bias', 40)
 	# create_undirected_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)
-	# check_and_clean()
+	check_and_clean()
 
 
 

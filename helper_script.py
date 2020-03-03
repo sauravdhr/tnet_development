@@ -187,8 +187,6 @@ def print_data_summary_():
 	print('max_hosts_count', max_hosts_count)
 	print('avg_hosts_count', total_hosts_count/len(folders))
 
-
-
 def run_phyloscanner_besttree():
 	data_dir = 'dataset/'
 	folders = next(os.walk(data_dir))[1]
