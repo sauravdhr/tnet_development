@@ -45,7 +45,7 @@ def create_ptree_from_newick_file(input_file, output_file):
 		dist_from_root[nonterminal.clades[1]] = dist_from_root[nonterminal] + nonterminal.clades[1].branch_length
 
 	max_dist = max(dist_from_root.values())
-	# print(max_dist)
+	print(max_dist)
 
 	count = 1
 	for terminal in input_tree.get_terminals():
