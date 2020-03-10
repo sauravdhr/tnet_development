@@ -5,6 +5,7 @@ from Bio import SeqIO
 import get_edges as ge
 import operator
 import os, shutil, sys
+import sharptni_script as sh
 import threading
 
 def get_sequences_and_network():
@@ -290,6 +291,69 @@ def run_tnet_new_multiple_times(input_file, output_file, time = 100):
 
 	result.close()
 
+def run_tnet_sampling_with_min_coinfection(input_file, output_file, time = 100):
+	temp_folder = output_file.split('.')[0] + '_sampling/'
+	if not os.path.exists(temp_folder):
+		os.mkdir(temp_folder)
+
+	coinfection_list = []
+
+	for t in range(time):
+		temp_out_file = temp_folder + str(t)
+		cmd = 'python3 tnet_dev.py {} {}'.format(input_file, temp_out_file)
+		# print(cmd)
+		os.system(cmd)
+		e_list = []
+		print('Run', t)
+
+		f = open(temp_out_file)
+		f.readline()
+		for line in f.readlines():
+			parts = line.rstrip().split('\t')
+			edge = parts[0]+'->'+parts[1]
+
+			if edge not in e_list:
+				e_list.append(edge)
+
+		coinfection_list.append(len(e_list))
+
+	min_coinfection = min(coinfection_list)
+	min_coinfection_sample_count = coinfection_list.count(min_coinfection)
+
+	# print('coinfection_list', coinfection_list)
+	# print('min_coinfection', min_coinfection)
+	# print('min_coinfection_sample_count', min_coinfection_sample_count)
+
+	edge_dict = {}
+	for i in range(time):
+		if coinfection_list[i] == min_coinfection:
+			e_list = []
+			f = open(temp_folder + str(i))
+			f.readline()
+			for line in f.readlines():
+				parts = line.strip().split('\t')
+				edge = parts[0]+'->'+parts[1]
+
+				if edge not in e_list:
+					if edge in edge_dict:
+						edge_dict[edge] += 1
+					else:
+						edge_dict[edge] = 1
+					e_list.append(edge)
+
+			f.close()
+
+	shutil.rmtree(temp_folder)
+	edge_dict = dict(sorted(edge_dict.items(), key=operator.itemgetter(1),reverse=True))
+	# print(edge_dict)
+
+	output_file += '_min_co.' + str(min_coinfection_sample_count)
+	result = open(output_file, 'w+')
+	for x, y in edge_dict.items():
+		result.write('{}\t{}\n'.format(x, y))
+
+	result.close()
+
 def run_tnet_old(times = 100):
 	data_dir = 'dataset/'
 	folders = next(os.walk(data_dir))[1]
@@ -353,7 +417,7 @@ def run_tnet_new_single_folder_with_pool(input_dir, output_dir, times = 100, poo
 		name = tree.split('.')[1]
 		out_file = output_dir + '/' + name +'.tnet'
 		if not os.path.exists(out_file):
-			t.append(threading.Thread(target=run_tnet_new_multiple_times, args=(tree_file, out_file, times)))
+			t.append(threading.Thread(target=run_tnet_sampling_with_min_coinfection, args=(tree_file, out_file, times)))
 
 	while len(t) > 0:
 		pool = min(pool, len(t))
@@ -371,7 +435,7 @@ def run_tnet_new_multithreaded(times = 100):
 	for folder in folders:
 		print('Inside',folder)
 		input_dir = data_dir + folder + '/rooted_bootstrap_trees'
-		output_dir = 'outputs/' + folder + '/tnet_new_' + str(times) + '_bootstrap_with_bias'
+		output_dir = 'outputs/' + folder + '/tnet_new_' + str(times) + '_bootstrap_with_bias_min_coinfection'
 		if not os.path.exists('outputs/' + folder):
 			os.mkdir('outputs/' + folder)
 		if not os.path.exists(output_dir):
@@ -464,14 +528,27 @@ def create_undirected_tnet_bootstrap_summary(tree_folder, threshold):
 			for x, y in edge_dict.items():
 				result.write('{},{}\n'.format(x, y))
 
+def create_directed_tnet_mininfection_bootstrap_summary_favites(threshold):
+	data_dir = 'outputs/'
+	folders = next(os.walk(data_dir))[1]
+	for folder in folders:
+		print(folder)
+		input_folder = data_dir + folder + '/tnet_new_100_bootstrap_with_bias_min_coinfection'
+		output_folder = data_dir + folder + '/tnet_new_100_bootstrap_with_bias_min_coinfection_summary_directed/'
+		if not os.path.exists(output_folder):
+			os.mkdir(output_folder)
+		output_file = output_folder + 'tnet_bootstrap_th_' + str(threshold) + '_summary.csv'
+		sh.create_sharptni_single_outbreak_summary(input_folder, output_file, threshold)
+		# break
+
 def check_and_clean():
-	data_dir = 'dataset/'
+	data_dir = 'outputs/'
 	folders = next(os.walk(data_dir))[1]
 	count = 0
 
 	for folder in folders:
-		# print('Inside',folder)
-		check_folder = 'outputs/' + folder + '/tnet_best_tree'
+		print('Inside',folder)
+		check_folder = data_dir + folder + '/tnet_new_100_bootstrap_with_bias_min_coinfection_summary_directed'
 		if os.path.exists(check_folder):
 			# original = '/home/saurav/research/FAVITES_compare_TNet_v2/outputs/'+ folder +'/tnet_best_tree/bestTree.1.tnet_new'
 			# copy = 'outputs/'+ folder +'/tnet_best_tree/bestTree.1.tnet_new'
@@ -480,16 +557,16 @@ def check_and_clean():
 			# count += 1
 			file_list = next(os.walk(check_folder))[2]
 			count += len(file_list)
-			for file in file_list:
-				if "tnet_new_with_min_bug_fixed" in file:
-					check_file = check_folder + '/' + file
-					print(check_file)
-					os.remove(check_file)
+			# for file in file_list:
+			# 	if "tnet_new_with_min_bug_fixed" in file:
+			# 		check_file = check_folder + '/' + file
+			# 		print(check_file)
+			# 		os.remove(check_file)
 			# 	print(folder)
 			# 	# os.remove(check_file)
 			# 	shutil.rmtree(check_folder + '/tnet_new_10_bootstrap')
 
-	print('Done',count, 'out of:', len(folders)*10)
+	print('Done',count, 'out of:', len(folders)*4)
 
 def main():
 	# get_sequences_and_network()
@@ -505,9 +582,10 @@ def main():
 	# run_tnet_new_multithreaded()
 	# create_tnet_bootstrap_output(10)
 	# create_tnet_bootstrap_output(50)
-	create_directed_tnet_bootstrap_summary('tnet_new_100_bootstrap_with_bias', 100)
+	# create_directed_tnet_mininfection_bootstrap_summary_favites(100)
+	# create_directed_tnet_bootstrap_summary('tnet_new_100_bootstrap_with_bias', 40)
 	# create_undirected_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)
-	# check_and_clean()
+	check_and_clean()
 
 
 

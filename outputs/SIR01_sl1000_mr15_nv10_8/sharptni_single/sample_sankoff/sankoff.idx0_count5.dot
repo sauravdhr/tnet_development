@@ -1,0 +1,25 @@
+digraph N {
+	overlap="false"
+	rankdir="LR"
+	0 [label="1",width=1.2,height=1.2,style="",penwidth=3,color="#3243BA"]
+	1 [label="2",width=1.2,height=1.2,style="",penwidth=3,color="#0363E1"]
+	2 [label="3",width=1.2,height=1.2,style="",penwidth=3,color="#0D75DC"]
+	3 [label="4",width=1.2,height=1.2,style="",penwidth=3,color="#1485D4"]
+	4 [label="5",width=1.2,height=1.2,style="",penwidth=3,color="#0998D1"]
+	5 [label="6",width=1.2,height=1.2,style="",penwidth=3,color="#06A7C6"]
+	6 [label="7",width=1.2,height=1.2,style="",penwidth=3,color="#15B1B4"]
+	7 [label="8",width=1.2,height=1.2,style="",penwidth=3,color="#38B99E"]
+	8 [label="9",width=1.2,height=1.2,style="",penwidth=3,color="#65BE86"]
+	9 [label="10",width=1.2,height=1.2,style="",penwidth=3,color="#92BF73"]
+	10 [label="11",width=1.2,height=1.2,style="",penwidth=3,color="#B7BD64"]
+	1 -> 2 [penwidth=1,color=black,label="1"]
+	4 -> 0 [penwidth=1,color=black,label="1"]
+	4 -> 1 [penwidth=1,color=black,label="1"]
+	4 -> 3 [penwidth=1,color=black,label="1"]
+	4 -> 5 [penwidth=1,color=black,label="1"]
+	4 -> 7 [penwidth=1,color=black,label="1"]
+	4 -> 8 [penwidth=1,color=black,label="1"]
+	4 -> 9 [penwidth=1,color=black,label="1"]
+	4 -> 10 [penwidth=1,color=black,label="1"]
+	5 -> 6 [penwidth=1,color=black,label="1"]
+}

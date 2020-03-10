@@ -8,6 +8,7 @@ import operator
 import shutil, os
 import get_edges as ge
 import main_script as ms
+import threading
 
 # Global Variables
 known_outbreaks = ['AA', 'AC', 'AI', 'AJ', 'AQ', 'AW', 'BA', 'BB', 'BC', 'BJ']
@@ -33,11 +34,12 @@ def get_true_transmission_edges(outbreak):
 
 def run_new_tnet_cdc_multithreaded(times = 100):
 	for outbreak in known_outbreaks:
-		input_folder = 'CDC/' + outbreak + '/tnet_input'
-		output_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_with_bias'
+		input_folder = 'CDC/' + outbreak + '/rooted_bootstrap_trees_100'
+		output_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_100'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 			ms.run_tnet_new_single_folder(input_folder, output_folder, times)
+			# break
 
 def run_old_tnet_cdc(times = 100):
 	for outbreak in known_outbreaks:
@@ -59,7 +61,7 @@ def run_old_tnet_cdc_single_tree(times = 100):
 		output_folder = 'CDC/'+outbreak+'/tnet_single_tree/'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
-		
+
 		output_file = output_folder + 'single_tree.' + str(times) + '.tnet_old_fixed'
 		if not os.path.exists(output_file):
 			# print(input_file, output_file)
@@ -71,7 +73,7 @@ def run_new_tnet_cdc_single_tree(times = 100):
 		output_folder = 'CDC/'+outbreak+'/tnet_single_tree/'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
-		
+
 		output_file = output_folder + 'single_tree.' + str(times) + '.tnet_new_min'
 		if not os.path.exists(output_file):
 			# print(input_file, output_file)
@@ -81,8 +83,8 @@ def create_cdc_tnet_summary_directed(threshold):
 	for outbreak in known_outbreaks:
 		print('Inside', outbreak)
 
-		input_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_with_bias'
-		output_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_with_bias_summary_directed'
+		input_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_100'
+		output_folder = 'CDC/' + outbreak + '/tnet_new_bootstrap_100_summary_directed'
 		if not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		edge_dict = {}
@@ -130,29 +132,154 @@ def create_cdc_tnet_summary_undirected(threshold):
 		for x, y in edge_dict.items():
 			result.write('{},{}\n'.format(x, y))
 
+def multithreadings(input_file, output_dir, bootstrap):
+	cmd = 'raxmlHPC -f a -m GTRGAMMA -p 12345 -x 12345 -s {} -w {} -N {} -n favites -k'.format(input_file, output_dir, bootstrap)
+	# print(cmd)
+	os.system(cmd)
+
+def run_raxml_with_threading(bootstrap):
+	data_dir = 'CDC/'
+	folders = next(os.walk(data_dir))[1]
+	t = []
+
+	for folder in folders:
+		RAxML_folder = os.path.abspath(data_dir + folder + '/RAxML_output_100')
+		fasta_file = os.path.abspath(data_dir + folder + '/sequences.fasta')
+		RAxML_info = RAxML_folder + '/RAxML_info.favites'
+		if not os.path.exists(RAxML_folder):
+			os.mkdir(RAxML_folder)
+		if os.path.exists(RAxML_info):
+			continue
+
+		t.append(threading.Thread(target=multithreadings, args=(fasta_file, RAxML_folder, bootstrap)))
+
+	# print('len', len(t))
+	for i in range(len(t)):
+		t[i].start()
+
+	for i in range(len(t)):
+		t[i].join()
+
+def create_bootstrap_trees():
+	data_dir = 'CDC/'
+	folders = next(os.walk(data_dir))[1]
+
+	for folder in folders:
+		print('Inside',folder)
+		bootstrap_file = data_dir + folder + '/RAxML_output_100/RAxML_bootstrap.favites'
+		bootstrap_folder = data_dir + folder + '/RAxML_output_100/bootstrap_trees'
+		if not os.path.exists(bootstrap_file):
+			continue
+		if not os.path.exists(bootstrap_folder):
+			os.mkdir(bootstrap_folder)
+
+		f = open(bootstrap_file)
+		tree_list = f.readlines()
+
+		for i in range(len(tree_list)):
+			file = open(bootstrap_folder + '/' + str(i) + '.bootstrap.tree', 'w')
+			file.write(tree_list[i])
+		# break
+
+def root_bootstrap_trees():
+	data_dir = 'CDC/'
+	folders = next(os.walk(data_dir))[1]
+
+	for folder in folders:
+		bootstrap_folder = data_dir + folder + '/RAxML_output_100/bootstrap_trees'
+		rooted_bootstrap_folder = data_dir + folder + '/rooted_bootstrap_trees_100'
+		bootstrap_trees = next(os.walk(bootstrap_folder))[2]
+		output_folder = os.path.abspath(rooted_bootstrap_folder)
+		if not os.path.exists(output_folder):
+			os.mkdir(output_folder)
+
+		for tree in bootstrap_trees:
+			input_tree = bootstrap_folder + '/' + tree
+			i = int(tree.split('.')[0])
+			cmd = 'raxmlHPC -f I -m GTRGAMMA -t {} -n {} -w {}'.format(input_tree, str(i), output_folder)
+			# print(cmd)
+			os.system(cmd)
+			try:
+				os.remove(output_folder + '/RAxML_info.' + str(i))
+			except:
+				print('RAxML_info does not exist')
+		# break
+
+def create_phyloscanner_input():
+	data_dir = 'CDC/'
+	folders = next(os.walk(data_dir))[1]
+
+	for folder in folders:
+		print('Inside',folder)
+		input_folder = data_dir + folder + '/rooted_bootstrap_trees_100'
+		output_folder = data_dir + folder + '/phyloscanner_input_trees_100'
+		tree_list = next(os.walk(input_folder))[2]
+		if not os.path.exists(output_folder):
+			os.mkdir(output_folder)
+
+		for tree in tree_list:
+			i = int(tree.rstrip().split('.')[1])
+			rooted_tree = input_folder + '/' + tree
+			rename_tree = output_folder + '/bootstrap.InWindow_'+ str(1000+i*100) +'_to_'+ str(1099+i*100) +'.tree'
+			shutil.copy(rooted_tree, rename_tree)
+
+def cmd_phyloscanner(input_file, output_folder):
+	cmd = 'PhyloScanner/phyloscanner_analyse_trees_old.R {} CDC -od {} s,0 --overwrite --tipRegex="^(.*)_(.*)$"'.format(input_file, output_folder)
+	print(cmd)
+	os.system(cmd)
+
+def run_phyloscanner_multithreaded():
+	data_dir = 'CDC/'
+	folders = next(os.walk(data_dir))[1]
+	t = []
+
+	for folder in folders:
+		input_folder = data_dir + folder + '/phyloscanner_input_trees_100'
+		output_folder = data_dir + folder + '/phyloscanner_output_100'
+		input_file = input_folder + '/bootstrap.InWindow_'
+
+		if not os.path.exists(output_folder):
+			print('Inside',folder)
+			os.mkdir(output_folder)
+			t.append(threading.Thread(target=cmd_phyloscanner, args=(input_file, output_folder)))
+
+	# print('len_t', len(t))
+	for i in range(len(t)):
+		t[i].start()
+
+	for i in range(len(t)):
+		t[i].join()
+
 def check_and_clean():
 	count = 0
 	total = len(known_outbreaks)
 	for outbreak in known_outbreaks:
-		check_folder = 'CDC/' + outbreak + '/tnet_single_tree/'
+		check_folder = 'CDC/' + outbreak + '/phyloscanner_output_100/'
 		if os.path.exists(check_folder):
-			# shutil.rmtree(check_folder)
-			check_file = check_folder + 'single_tree.1.tnet_new_min'
-			if os.path.exists(check_file):
-				os.remove(check_file)
 			file_list = next(os.walk(check_folder))[2]
-			count += len(file_list)
+			# shutil.rmtree(check_folder)
+			for file in file_list:
+				check_file = check_folder + file
+				if check_file.endswith('pdf'):
+					# print(check_file)
+					os.remove(check_file)
+			# file_list = next(os.walk(check_folder))[2]
+			# count += len(file_list)
 			# check_file = check_folder + file_list[0]
 			# if os.stat(check_file).st_size == 0:
 			# 	print(folder)
 
 	print('Progress:', count, 'out of', total*6)
 
-
 def main():
+	# run_raxml_with_threading(100)
+	# create_bootstrap_trees()
+	# root_bootstrap_trees()
+	# create_phyloscanner_input()
+	# run_phyloscanner_multithreaded()
 	# run_new_tnet_cdc_multithreaded(100)
 	# run_new_tnet_cdc_single_tree(100)
-	create_cdc_tnet_summary_directed(50)
+	create_cdc_tnet_summary_directed(100)
 	# create_cdc_tnet_summary_undirected(40)
 	# check_and_clean()
 	# get_true_transmission_edges('BJ')

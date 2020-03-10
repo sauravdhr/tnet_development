@@ -123,7 +123,7 @@ def run_tnet_new_besttree_multithreaded_with_pool(times, pool):
 			os.mkdir(output_dir)
 
 		tree_file = input_dir + '/RAxML_rootedTree.bestTree.favites'
-		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_new_max_br_len'
+		out_file = output_dir + '/bestTree.' + str(times) +'.tnet_new_with_bias'
 		t.append(threading.Thread(target=ms.run_tnet_new_multiple_times, args=(tree_file, out_file, times)))
 
 	while len(t) > 0:
@@ -187,8 +187,6 @@ def print_data_summary_():
 	print('max_hosts_count', max_hosts_count)
 	print('avg_hosts_count', total_hosts_count/len(folders))
 
-
-
 def run_phyloscanner_besttree():
 	data_dir = 'dataset/'
 	folders = next(os.walk(data_dir))[1]
@@ -211,12 +209,11 @@ def main():
 	# run_raxml_scripts_with_threading('raxml_scripts')
 	# root_raxml_best_tree()
 	# run_tnet_new_besttree_multithreaded(100)
-	run_tnet_new_besttree_multithreaded_with_pool(100, 60)
+	run_tnet_new_besttree_multithreaded_with_pool(1, 3)
 	# run_tnet_old_besttree(1)
 	# run_phyloscanner_besttree()
 	# print_data_summary_()
 
-	
 
 
 
