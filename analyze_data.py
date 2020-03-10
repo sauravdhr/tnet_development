@@ -129,9 +129,36 @@ def print_data_summary_():
 	print('max_hosts_count', max_hosts_count)
 	print('avg_hosts_count', total_hosts_count/len(folders))
 
+def get_folder_compression_ratio(folder):
+	files = next(os.walk(folder))[2]
+	sum = 0
+	for file in files:
+		sum += int(file.split('.')[-1])
+
+	div = len(files)*100
+	# print(div, sum)
+	return sum/div
+
+def get_favites_compression_ratio_summary():
+	data_dir = 'outputs/'
+
+	for group in get_favites_data_list():
+		# print(group)
+		group_sum = 0
+		for i in range(1, 21):
+			folder = group + '_' + str(i)
+			folder_cr = get_folder_compression_ratio(data_dir + folder + '/tnet_new_100_bootstrap_with_bias_min_coinfection/')
+			group_sum += folder_cr
+
+		group_cr = group_sum/20
+		print(group, round(group_cr, 3))
+		# break
+
+
+
 def main():
 	# get_favites_infector_ratio_summary()
 	# get_favites_result_summary('results/favites_directed_comparison/bootstrap.100.phyloscanner.tnet.new.tnet.bias.th.50.csv')
-	
+	get_favites_compression_ratio_summary()
 
 if __name__ == "__main__": main()
