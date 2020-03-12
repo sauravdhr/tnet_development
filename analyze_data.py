@@ -31,6 +31,22 @@ def get_infectors_list(folder):
 	f.close()
 	return infectors
 
+def get_avg_outdegree_of_trans_net(folder):
+	trans_file = 'dataset/' + folder +'/transmission_network.txt'
+	f = open(trans_file)
+	f.readline()
+	infectors = []
+
+	total = 0
+	for line in f.readlines():
+		total += 1
+		parts = line.split('\t')
+		if not parts[0] in infectors:
+			infectors.append(parts[0])
+
+	f.close()
+	return total/len(infectors)
+
 def get_favites_data_list():
 	data_dir = 'dataset/'
 	folders = next(os.walk(data_dir))[1]
@@ -60,6 +76,16 @@ def get_favites_infector_ratio_summary():
 		avg = sum/20
 		print(group, round(avg, 2))
 
+def get_favites_avg_outdegree_summary():
+	for group in get_favites_data_list():
+		sum = 0
+		for i in range(1,21):
+			folder = group + '_' + str(i)
+			sum += get_avg_outdegree_of_trans_net(folder)
+		avg = sum/20
+		# print(group, round(avg, 2))
+		print('{},{}'.format(group, round(avg, 2)))
+
 def get_agv_csv_list(csv_list, start_index):
 	eff_len = len(csv_list[0].strip().split(',')) - start_index
 	sums = []
@@ -88,7 +114,7 @@ def get_favites_result_summary(csv_file):
 	for group in get_favites_data_list():
 		grouplines = [idx for idx in lines if idx.startswith(group)]
 		avg = get_agv_csv_list(grouplines, 1)
-		result.write('{},{},{},{},{},{},{},{},{},{}\n'.format(group,avg[0],avg[1],avg[2],avg[3],avg[4],avg[5],avg[6],avg[7],avg[8]))
+		result.write('{},{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(group,avg[0],avg[1],avg[2],avg[3],avg[4],avg[5],avg[6],avg[7],avg[8],avg[9],avg[10],avg[11]))
 
 	f.close()
 
@@ -158,7 +184,8 @@ def get_favites_compression_ratio_summary():
 
 def main():
 	# get_favites_infector_ratio_summary()
-	# get_favites_result_summary('results/favites_directed_comparison/bootstrap.100.phyloscanner.tnet.new.tnet.bias.th.50.csv')
-	get_favites_compression_ratio_summary()
+	get_favites_avg_outdegree_summary()
+	# get_favites_result_summary('results/sharptni_min_coinfection_directed_comparison/favites.phyloscanner.sharptni.min.coinf.tnet.new.tnet.bias.sample_th.50.bootstrap_th.50.csv')
+	# get_favites_compression_ratio_summary()
 
 if __name__ == "__main__": main()
