@@ -2,6 +2,7 @@
 
 # Library Imports
 from Bio import SeqIO
+from Bio import Phylo
 import get_edges as ge
 import main_script as ms
 import operator
@@ -12,14 +13,14 @@ import xlrd
 def create_clean_sequences_gisaid(input_fasta, output_fasta):
 	data_dir = 'covid_19/GISAID/'
 	records = list(SeqIO.parse(data_dir + input_fasta, 'fasta'))
-	wb = xlrd.open_workbook(data_dir + 'gisaid_cov2020_acknowledgement_table.xls')
-	sheet = wb.sheet_by_index(0)
+	# wb = xlrd.open_workbook(data_dir + 'gisaid_cov2020_acknowledgement_table.xls')
+	# sheet = wb.sheet_by_index(0)
 
-	id_location_dict = {}
-	for i in range(4, sheet.nrows):
-		id_location_dict[sheet.cell_value(i, 0)] = sheet.cell_value(i, 2)
+	# id_location_dict = {}
+	# for i in range(4, sheet.nrows):
+	# 	id_location_dict[sheet.cell_value(i, 0)] = sheet.cell_value(i, 2)
 
-	list_temp = []
+	# list_temp = []
 	for record in records:
 		accession_id = record.id.split('|')[1]
 		# parts = id_location_dict[accession_id].split('/')
@@ -28,14 +29,14 @@ def create_clean_sequences_gisaid(input_fasta, output_fasta):
 		# 	print('Unknown')
 		# else:
 		# 	print(parts[2])
-		list_temp.append(len(record.seq))
+		# list_temp.append(len(record.seq))
 		record.id = accession_id
 		record.name = ''
 		record.description = ''
 
-	print(min(list_temp), max(list_temp))
+	# print(min(list_temp), max(list_temp))
 
-	# SeqIO.write(records, data_dir + output_fasta, 'fasta')
+	SeqIO.write(records[0:10], data_dir + output_fasta, 'fasta')
 
 def create_clean_sequences_ncbi(input_fasta, output_fasta):
 	data_dir = 'covid_19/NCBI/'
@@ -99,20 +100,13 @@ def root_bootstrap_trees():
 	bootstrap_folder = data_dir + 'RAxML_output_complete/bootstrap_trees'
 	rooted_bootstrap_folder = data_dir + 'RAxML_output_complete/rooted_bootstrap_trees'
 	bootstrap_trees = next(os.walk(bootstrap_folder))[2]
-	output_folder = os.path.abspath(rooted_bootstrap_folder)
-	if not os.path.exists(output_folder):
-		os.mkdir(output_folder)
+	if not os.path.exists(rooted_bootstrap_folder):
+		os.mkdir(rooted_bootstrap_folder)
 
 	for tree in bootstrap_trees:
 		input_tree = bootstrap_folder + '/' + tree
-		i = int(tree.split('.')[0])
-		cmd = 'raxmlHPC -f I -m GTRGAMMA -t {} -n {} -w {}'.format(input_tree, str(i), output_folder)
-		# print(cmd)
-		os.system(cmd)
-		try:
-			os.remove(output_folder + '/RAxML_info.' + str(i))
-		except:
-			print('RAxML_info does not exist')
+		output_tree = rooted_bootstrap_folder + '/' + tree
+		root_tree_with_outgroup(input_tree, output_tree, 'NC_045512')
 
 def rename_rooted_trees():
 	data_dir = 'covid_19/NCBI/'
@@ -126,7 +120,7 @@ def rename_rooted_trees():
 		id_location_dict[parts[0]] = parts[2].replace(' ', '')
 		# print(parts[2].replace(' ', ''))
 
-	input_file = data_dir + 'RAxML_output_complete/RAxML_rootedTree.bestTree'
+	input_file = data_dir + 'RAxML_output_complete/RAxML_bestTree.rooted'
 	output_file = data_dir + 'RAxML_output_complete/bestTree_rooted.renamed'
 	f = open(input_file)
 	line = f.readline()
@@ -144,7 +138,7 @@ def rename_rooted_trees():
 
 	for tree in bootstrap_trees:
 		input_file = rooted_bootstrap_folder + '/' + tree
-		output_file = renamed_folder + '/' + tree.replace('RAxML', 'renamed')
+		output_file = renamed_folder + '/' + tree
 		# print(input_file, output_file)
 		f = open(input_file)
 		line = f.readline()
@@ -175,15 +169,47 @@ def run_tnet_bootstrap_trees(times):
 		output_file = output_folder + tree
 		ms.run_tnet_new_multiple_times(input_file, output_file, times)
 
+def root_tree_with_outgroup(input_file, output_file, outgroup):
+	input_tree = Phylo.read(input_file, 'newick')
+	input_tree.root_with_outgroup({'name': outgroup})
+	Phylo.write(input_tree, output_file, 'newick')
+
+def create_directed_tnet_bootstrap_summary(tree_folder, threshold):
+	data_dir = 'covid_19/NCBI/'
+
+	edge_dict = {}
+	bootstrap_folder = data_dir + tree_folder
+	output_folder = data_dir + '/tnet_output_complete/'
+	if not os.path.exists(output_folder):
+		os.mkdir(output_folder)
+
+	if not os.path.exists(output_folder + 'bootstrap_tnet_bias_100_th_' + str(threshold) + '_summary.csv'):
+		result = open(output_folder + 'bootstrap_tnet_bias_100_th_' + str(threshold) + '_summary.csv', 'w+')
+		file_list = next(os.walk(bootstrap_folder))[2]
+
+		for file in file_list:
+			tnet_file = bootstrap_folder + '/' + file
+			tnet_edges = ge.get_mul_tnet_edges(tnet_file, threshold)
+			for edge in tnet_edges:
+				if edge in edge_dict:
+					edge_dict[edge] += 1
+				else:
+					edge_dict[edge] = 1
+
+		edge_dict = dict(sorted(edge_dict.items(), key=operator.itemgetter(1),reverse=True))
+		for x, y in edge_dict.items():
+			result.write('{},{}\n'.format(x, y))
+
 def main():
-	# create_clean_sequences_gisaid('gisaid_cov2020_sequences_world_complete_high_coverage.fasta', 'clean_sequences_world_nations.fasta')
+	# create_clean_sequences_gisaid('gisaid_cov2020_sequences_world_complete_high_coverage.fasta', 'clean_sequences_test.fasta')
 	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences_align.fasta', 'clean_complete_align_sequences.fasta')
 	# run_raxml_with_pthreads('clean_complete_align_sequences.fasta', 100, 50)
 	# create_bootstrap_trees()
 	# root_bootstrap_trees()
 	# rename_rooted_trees()
-	# run_tnet_best_tree(100)
-	run_tnet_bootstrap_trees(100)
+	# run_tnet_best_tree(1)
+	# run_tnet_bootstrap_trees(100)
+	create_directed_tnet_bootstrap_summary('tnet_100_with_bias_bootstrap_complete_renamed', 50)
 
 
 if __name__ == "__main__": main()
