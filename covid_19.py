@@ -154,7 +154,7 @@ def run_tnet_best_tree(times):
 	data_dir = 'covid_19/NCBI/'
 	input_file = data_dir + 'RAxML_output_complete/bestTree_rooted.renamed'
 	output_file = data_dir + 'tnet_output_complete/bestTree.' + str(times) + '.tnet_with_bias'
-	ms.run_tnet_new_multiple_times(input_file, output_file, times)
+	ms.run_tnet_new_multiple_times_with_info(input_file, output_file, times)
 
 def run_tnet_bootstrap_trees(times):
 	data_dir = 'covid_19/NCBI/'
@@ -167,7 +167,7 @@ def run_tnet_bootstrap_trees(times):
 	for tree in bootstrap_trees:
 		input_file = input_folder + tree
 		output_file = output_folder + tree
-		ms.run_tnet_new_multiple_times(input_file, output_file, times)
+		ms.run_tnet_new_multiple_times_with_info(input_file, output_file, times)
 
 def root_tree_with_outgroup(input_file, output_file, outgroup):
 	input_tree = Phylo.read(input_file, 'newick')
@@ -207,9 +207,9 @@ def main():
 	# create_bootstrap_trees()
 	# root_bootstrap_trees()
 	# rename_rooted_trees()
-	# run_tnet_best_tree(1)
-	# run_tnet_bootstrap_trees(100)
-	create_directed_tnet_bootstrap_summary('tnet_100_with_bias_bootstrap_complete_renamed', 50)
+	# run_tnet_best_tree(100)
+	run_tnet_bootstrap_trees(100)
+	# create_directed_tnet_bootstrap_summary('tnet_100_with_bias_bootstrap_complete_renamed', 50)
 
 
 if __name__ == "__main__": main()

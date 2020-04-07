@@ -291,6 +291,54 @@ def run_tnet_new_multiple_times(input_file, output_file, time = 100):
 
 	result.close()
 
+def run_tnet_new_multiple_times_with_info(input_file, output_file, time = 100):
+	temp_out_file = output_file + '.temp'
+	info_out_file = output_file + '.info'
+	edge_dict = {}
+	source_count = {}
+	result = open(output_file, 'w+')
+	info = open(info_out_file, 'w+')
+
+	for t in range(time):
+		cmd = 'python3 tnet.py {} {}'.format(input_file, temp_out_file)
+		os.system(cmd)
+		temp_dict = {}
+		print('Run', t)
+
+		f = open(temp_out_file)
+		f.readline()
+		for line in f.readlines():
+			parts = line.rstrip().split('\t')
+			edge = parts[0]+'->'+parts[1]
+
+			if edge in temp_dict:
+				temp_dict[edge] += 1
+			else:
+				temp_dict[edge] = 1
+
+		f.close()
+		os.remove(temp_out_file)
+
+		temp_dict = dict(sorted(temp_dict.items(), key=operator.itemgetter(1), reverse=True))
+
+		info.write('Run\t{}\n'.format(t))
+		for x, y in temp_dict.items():
+			info.write('{}\t{}\n'.format(x, y))
+
+		for edge in temp_dict.keys():
+			if edge in edge_dict:
+				edge_dict[edge] += 1
+			else:
+				edge_dict[edge] = 1
+
+	edge_dict = dict(sorted(edge_dict.items(), key=operator.itemgetter(1),reverse=True))
+	# print(edge_dict)
+
+	for x, y in edge_dict.items():
+		result.write('{}\t{}\n'.format(x, y))
+
+	result.close()
+
 def run_tnet_sampling_with_min_coinfection(input_file, output_file, time = 100):
 	temp_folder = output_file.split('.')[0] + '_sampling/'
 	if not os.path.exists(temp_folder):
@@ -585,6 +633,7 @@ def main():
 	# create_directed_tnet_mininfection_bootstrap_summary_favites(100)
 	# create_directed_tnet_bootstrap_summary('tnet_new_100_bootstrap_with_bias', 40)
 	# create_undirected_tnet_bootstrap_summary('tnet_new_10_bootstrap', 30)
+	# run_tnet_new_multiple_times_with_info('covid_19/NCBI/RAxML_output_complete/bestTree_rooted.renamed', 'covid_19/NCBI/tnet_output_complete/bestTree.1.tnet_with_bias', 2)
 	check_and_clean()
 
 
