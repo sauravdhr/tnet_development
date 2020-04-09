@@ -3,6 +3,7 @@
 # Library Imports
 from Bio import SeqIO
 from Bio import Phylo
+# from ete3 import Tree
 import get_edges as ge
 import main_script as ms
 import operator
@@ -200,6 +201,67 @@ def create_directed_tnet_bootstrap_summary(tree_folder, threshold):
 		for x, y in edge_dict.items():
 			result.write('{},{}\n'.format(x, y))
 
+def clean_nextstrain_tree():
+	data_dir = 'covid_19/nextstrain/'
+	f = open(data_dir + 'nextstrain_ncov_global_metadata.tsv')
+
+	strain_dict = {}
+	for line in f.readlines():
+		parts = line.split('\t')
+		strain_dict[parts[0]] = parts[5]
+
+	input_file = data_dir + 'nextstrain_ncov_global_timetree.nwk'
+	output_file = data_dir + 'clean_nextstrain_ncov_global_timetree.nwk'
+	t = Tree(input_file, format = 1)
+	t.write(outfile = output_file, format = 5)
+
+	t = Tree(output_file)
+	for leaf in t:
+		print(leaf.name, strain_dict[leaf.name])
+		leaf.name = strain_dict[leaf.name]
+
+	t.write(outfile = output_file, format = 5)
+
+def prepare_nextstrain_tree_for_tnet():
+	data_dir = 'covid_19/nextstrain/'
+	input_file = data_dir + 'clean_nextstrain_ncov_global_timetree.nwk'
+	output_file = data_dir + 'rooted_clean_nextstrain_ncov_global_timetree.nwk'
+
+	tree = Phylo.read(input_file, 'newick')
+	tree.root_with_outgroup({'name': 'EPI_ISL_402125'})
+	Phylo.write(tree, output_file, 'newick')
+
+	###############################
+	# Use R to make the rooted tree bifurcating
+	# library(phytools)
+	#
+	# rt<-read.tree('rooted_clean_nextstrain_ncov_global_timetree.nwk')
+	# is.binary(rt) #[1] FALSE
+	# brt<-multi2di(rt)
+	# is.binary(brt) #[1] FALSE
+	# brt<-collapse.singles(brt, root.edge = FALSE)
+	# is.binary(brt) #[1] TRUE
+	# write.tree(brt, file = "binary_rooted_clean_nextstrain_ncov_global_timetree.nwk")
+	###############################
+
+	f = open(data_dir + 'nextstrain_ncov_global_metadata.tsv')
+	strain_dict = {}
+
+	for line in f.readlines():
+		parts = line.split('\t')
+		strain_dict[parts[5]] = parts[3]
+		print(parts[5], parts[3])
+
+	input_file = data_dir + 'binary_rooted_clean_nextstrain_ncov_global_timetree.nwk'
+	output_file = data_dir + 'tnet_input_nextstrain_ncov_global_timetree.nwk'
+	tree = Phylo.read(input_file, 'newick')
+
+	for node in tree.get_terminals():
+		print(node.name, strain_dict[node.name].replace(' ', ''))
+		node.name = strain_dict[node.name].replace(' ', '')
+
+	Phylo.write(tree, output_file, 'newick')
+
 def main():
 	# create_clean_sequences_gisaid('gisaid_cov2020_sequences_world_complete_high_coverage.fasta', 'clean_sequences_test.fasta')
 	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences_align.fasta', 'clean_complete_align_sequences.fasta')
@@ -207,9 +269,11 @@ def main():
 	# create_bootstrap_trees()
 	# root_bootstrap_trees()
 	# rename_rooted_trees()
-	# run_tnet_best_tree(100)
-	run_tnet_bootstrap_trees(100)
+	run_tnet_best_tree(100)
+	# run_tnet_bootstrap_trees(100)
 	# create_directed_tnet_bootstrap_summary('tnet_100_with_bias_bootstrap_complete_renamed', 50)
-
+	# clean_nextstrain_tree()
+	# prepare_nextstrain_tree_for_tnet()
+	
 
 if __name__ == "__main__": main()
