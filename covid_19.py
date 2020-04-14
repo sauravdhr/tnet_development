@@ -6,10 +6,15 @@ from Bio import Phylo
 # from ete3 import Tree
 import get_edges as ge
 import main_script as ms
+import matplotlib.pyplot as plt
+from matplotlib import cm
 import operator
 import os, shutil, sys
 import threading
+from treetime import TreeTime
+from treetime.utils import parse_dates
 import xlrd
+import tnet_treetime as tnet
 
 def create_clean_sequences_gisaid(input_fasta, output_fasta):
 	data_dir = 'covid_19/GISAID/'
@@ -152,9 +157,9 @@ def rename_rooted_trees():
 		f.close()
 
 def run_tnet_best_tree(times):
-	data_dir = 'covid_19/NCBI/'
-	input_file = data_dir + 'RAxML_output_complete/bestTree_rooted.renamed'
-	output_file = data_dir + 'tnet_output_complete/bestTree.' + str(times) + '.tnet_with_bias'
+	data_dir = 'covid_19/nextstrain/'
+	input_file = data_dir + 'tnet_input_nextstrain_ncov_global_timetree.nwk'
+	output_file = data_dir + 'tnet_output/nextstrain_ncov_global_timetree.' + str(times) + '.tnet_with_bias'
 	ms.run_tnet_new_multiple_times_with_info(input_file, output_file, times)
 
 def run_tnet_bootstrap_trees(times):
@@ -262,6 +267,124 @@ def prepare_nextstrain_tree_for_tnet():
 
 	Phylo.write(tree, output_file, 'newick')
 
+def create_treetime_metadata():
+	data_dir = 'covid_19/NCBI/'
+	output_file = data_dir + 'treetime_metadata.csv'
+
+	f1 = open(data_dir + 'data_table.csv')
+	f2 = open(output_file, 'w')
+
+	f1.readline()
+	f2.write('name,date,location\n')
+	for line in f1.readlines():
+		parts = line.split(',')
+		print(line.split(','))
+		f2.write('{},{},{}\n'.format(parts[0], parts[3], parts[2]))
+
+	f1.close()
+	f2.close()
+
+def run_treetime():
+	data_dir = 'covid_19/NCBI/'
+	newick = data_dir + 'RAxML_output_complete/RAxML_bestTree.rooted'
+	fasta = data_dir + 'clean_complete_align_sequences.fasta'
+	dates = parse_dates(data_dir + 'treetime_metadata.csv')
+
+	tt = TreeTime(tree = newick, aln = fasta, dates = dates)
+	fig, axs = plt.subplots(1,2, figsize=(18,9))
+	axs[0].set_title("Tree rerooted by treetime", fontsize=18)
+	axs[1].set_title("Optimal divergence-time relationship", fontsize=18)
+	Phylo.draw(tt.tree, show_confidence=False, axes=axs[0],
+	label_func=lambda x:x.name.split('|')[0] if x.is_terminal() else "")
+	tt.plot_root_to_tip(ax=axs[-1])
+	# format_axes(fig, axs)
+	# tt.run(branch_length_mode='input')
+	# print(tt.resolve_polytomies())
+	# print(tt.resolve_polytomies())
+	# print(tt)
+	# print(tt.tree)
+
+def parse_treetime_tree():
+	data_dir = 'covid_19/NCBI/'
+	raxml_tree = data_dir + 'RAxML_output_complete/RAxML_bestTree.rooted'
+	treetime_tree = data_dir + 'out_tree.nwk'
+
+	tree1 = Phylo.read(treetime_tree, 'newick')
+	print(len(tree1.get_terminals()) + len(tree1.get_nonterminals()))
+	child_parent = {}
+
+	for parent in tree1.get_nonterminals():
+		# node_path = tree1.get_path(node)
+		# print(parent.name, len(parent.clades))
+		for child in parent.clades:
+			print(child, parent)
+			child_parent[child.name] = parent.name
+
+	print(len(child_parent))
+	child_parent['NODE_0000000'] = 'NODE_0000000'
+	print(child_parent['NODE_0000000'])
+
+	tree2 = Phylo.read(raxml_tree, 'newick')
+
+	for node in tree2.get_nonterminals(order = 'postorder'):
+		first_child = node.clades[0].name
+		print(node.name, first_child, child_parent[first_child])
+		if node.name == None:
+			node.name = child_parent[first_child]
+
+	# print(tree2)
+	Phylo.write(tree2, data_dir + 'out_tree.out', 'newick')
+
+def treetime_tnet():
+	data_dir = 'covid_19/NCBI/'
+	treetime_tree = data_dir + 'out_tree.out'
+	id_loc = {}
+	id_date = {}
+
+	f = open(data_dir + 'out_metadata.csv')
+	f.readline()
+	for line in f.readlines():
+		parts = line.strip().split(',')
+		# print(parts)
+		id_loc[parts[0]] = parts[3].replace(' ', '')
+		id_date[parts[0]] = parts[4]
+
+	# print(id_loc)
+	# print(id_date)
+	input_tree = Phylo.read(treetime_tree, 'newick')
+	# print(input_tree)
+	node_date = {}
+
+	for node in input_tree.get_terminals():
+		node_date[node] = id_date[node.name]
+		node.name = id_loc[node.name]
+
+	for node in input_tree.get_nonterminals():
+		node_date[node] = id_date[node.name]
+		node.name = id_loc[node.name]
+
+	# print(input_tree)
+	# print(node_date)
+
+	tnet.initialize_leaf_nodes(input_tree)
+	tnet.initialize_internal_nodes(input_tree)
+	input_tree.root.name = tnet.choose_root_host(input_tree.root)
+	tnet.choose_internal_node_host_with_bias(input_tree)
+	# print(input_tree)
+
+	edges = {}
+	for nonterminal in input_tree.get_nonterminals(order = 'preorder'):
+		if nonterminal.name != nonterminal.clades[0].name:
+			# print(node_date[nonterminal])
+			edges[nonterminal.name + '->' + nonterminal.clades[0].name] = node_date[nonterminal]
+		if nonterminal.name != nonterminal.clades[1].name:
+			# print(node_date[nonterminal])
+			edges[nonterminal.name + '->' + nonterminal.clades[1].name] = node_date[nonterminal]
+
+	edges = dict(sorted(edges.items(), key=operator.itemgetter(1),reverse=False))
+	for x,y in edges.items():
+		print(x, y)
+
 def main():
 	# create_clean_sequences_gisaid('gisaid_cov2020_sequences_world_complete_high_coverage.fasta', 'clean_sequences_test.fasta')
 	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences_align.fasta', 'clean_complete_align_sequences.fasta')
@@ -269,11 +392,15 @@ def main():
 	# create_bootstrap_trees()
 	# root_bootstrap_trees()
 	# rename_rooted_trees()
-	run_tnet_best_tree(100)
+	# run_tnet_best_tree(100)
 	# run_tnet_bootstrap_trees(100)
 	# create_directed_tnet_bootstrap_summary('tnet_100_with_bias_bootstrap_complete_renamed', 50)
 	# clean_nextstrain_tree()
 	# prepare_nextstrain_tree_for_tnet()
-	
+	# create_treetime_metadata()
+	# run_treetime()
+	# parse_treetime_tree()
+	treetime_tnet()
+
 
 if __name__ == "__main__": main()

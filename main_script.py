@@ -256,7 +256,7 @@ def run_tnet_old_multiple_times(input_file, output_file, time = 100):
 def run_tnet_new_multiple_times(input_file, output_file, time = 100):
 	temp_out_file = output_file + '.temp'
 	edge_dict = {}
-	source_count = {}
+
 	result = open(output_file, 'w+')
 
 	for t in range(time):
@@ -295,7 +295,7 @@ def run_tnet_new_multiple_times_with_info(input_file, output_file, time = 100):
 	temp_out_file = output_file + '.temp'
 	info_out_file = output_file + '.info'
 	edge_dict = {}
-	source_count = {}
+
 	result = open(output_file, 'w+')
 	info = open(info_out_file, 'w+')
 
