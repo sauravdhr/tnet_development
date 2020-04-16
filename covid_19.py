@@ -338,6 +338,7 @@ def parse_treetime_tree():
 def treetime_tnet():
 	data_dir = 'covid_19/NCBI/treetime_complete/'
 	treetime_tree = data_dir + 'out_tree.tnet'
+	output_file = data_dir + 'tnet_random_sample.dated_edges'
 	id_loc = {}
 	id_date = {}
 
@@ -368,7 +369,8 @@ def treetime_tnet():
 	tnet.initialize_leaf_nodes(input_tree)
 	tnet.initialize_internal_nodes(input_tree)
 	input_tree.root.name = tnet.choose_root_host(input_tree.root)
-	tnet.choose_internal_node_host_with_bias(input_tree)
+	tnet.choose_internal_node_host(input_tree)
+	tnet.write_info_file(output_file, input_tree)
 	# print(input_tree)
 
 	edges = []
@@ -381,7 +383,7 @@ def treetime_tnet():
 			edges.append([nonterminal.name + '->' + nonterminal.clades[1].name, node_date[nonterminal]])
 
 	edges = sorted(edges, key=operator.itemgetter(1),reverse=False)
-	result = open(data_dir + 'tnet_bias.dated_edges', 'w+')
+	result = open(output_file, 'w+')
 	for edge in edges:
 		result.write('{},{}\n'.format(edge[0], edge[1]))
 
@@ -427,8 +429,8 @@ def create_group_treetime_dated_edges(input_file, groups):
 
 		edge_date_dict[edge[0]][i] += 1
 
-	for x, y in edge_date_dict.items():
-		print(x, y)
+	# for x, y in edge_date_dict.items():
+	# 	print(x, y)
 
 	result = open(input_file + '.all_date_groups.csv', 'w+')
 	result.write('edges/dates,{}\n'.format(str(all_dates[1:])[1:-1]))
@@ -446,7 +448,7 @@ def create_group_treetime_dated_edges(input_file, groups):
 	for i in range(groups):
 		steps.append(min_date + (i + 1)*step_size)
 
-	print(steps)
+	# print(steps)
 
 	edge_date_groups_dict = {}
 	for edge in edge_count.keys():
@@ -461,8 +463,8 @@ def create_group_treetime_dated_edges(input_file, groups):
 
 		edge_date_groups_dict[edge[0]][i] += 1
 
-	for x, y in edge_date_groups_dict.items():
-		print(x, y)
+	# for x, y in edge_date_groups_dict.items():
+	# 	print(x, y)
 
 	result = open(input_file + '.date_groups.csv', 'w+')
 	result.write('edges/dates,{}\n'.format(str(steps)[1:-1]))
@@ -486,8 +488,8 @@ def main():
 	# create_treetime_metadata()
 	# run_treetime()
 	# parse_treetime_tree()
-	# treetime_tnet()
-	create_group_treetime_dated_edges('covid_19/NCBI/treetime_complete/tnet_bias.dated_edges', 3)
+	treetime_tnet()
+	create_group_treetime_dated_edges('covid_19/NCBI/treetime_complete/tnet_random_sample.dated_edges', 3)
 
 
 if __name__ == "__main__": main()
