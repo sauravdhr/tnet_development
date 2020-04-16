@@ -47,25 +47,11 @@ def create_clean_sequences_gisaid(input_fasta, output_fasta):
 def create_clean_sequences_ncbi(input_fasta, output_fasta):
 	data_dir = 'covid_19/NCBI/'
 	records = list(SeqIO.parse(data_dir + input_fasta, 'fasta'))
-	# f = open(data_dir + 'data_table.csv')
-	# f.readline()
-	# id_location_dict = {}
-	# for line in f.readlines():
-	# 	parts = line.split(',')
-	# 	print(parts[2])
-	# 	id_location_dict[sheet.cell_value(i, 0)] = sheet.cell_value(i, 2)
 
 	temp = []
 	for record in records:
 		accession_id = record.id.split('|')[1].split('.')[0]
-		# parts = id_location_dict[accession_id].split('/')
-		# print(accession_id, parts)
-		# if len(parts) < 3:
-		# 	print('Unknown')
-		# else:
-		# 	print(parts[2])
-		# temp.append(len(record.seq))
-		print(accession_id)
+		# print(accession_id)
 		record.id = accession_id
 		record.name = ''
 		record.description = ''
@@ -76,7 +62,7 @@ def create_clean_sequences_ncbi(input_fasta, output_fasta):
 
 def run_raxml_with_pthreads(fasta_file, bootstrap, threads):
 	data_dir = 'covid_19/NCBI/'
-	RAxML_folder = os.path.abspath(data_dir + '/RAxML_output_complete')
+	RAxML_folder = os.path.abspath(data_dir + '/RAxML_output_april')
 	input_file = os.path.abspath(data_dir + fasta_file)
 
 	if not os.path.exists(RAxML_folder):
@@ -475,8 +461,8 @@ def create_group_treetime_dated_edges(input_file, groups):
 
 def main():
 	# create_clean_sequences_gisaid('gisaid_cov2020_sequences_world_complete_high_coverage.fasta', 'clean_sequences_test.fasta')
-	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences_align.fasta', 'clean_complete_align_sequences.fasta')
-	# run_raxml_with_pthreads('clean_complete_align_sequences.fasta', 100, 50)
+	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences.aln', 'clean_complete_align_sequences.fasta')
+	run_raxml_with_pthreads('clean_complete_align_sequences.fasta', 100, 50)
 	# create_bootstrap_trees()
 	# root_bootstrap_trees()
 	# rename_rooted_trees()
@@ -488,8 +474,8 @@ def main():
 	# create_treetime_metadata()
 	# run_treetime()
 	# parse_treetime_tree()
-	treetime_tnet()
-	create_group_treetime_dated_edges('covid_19/NCBI/treetime_complete/tnet_random_sample.dated_edges', 3)
+	# treetime_tnet()
+	# create_group_treetime_dated_edges('covid_19/NCBI/treetime_complete/tnet_random_sample.dated_edges', 3)
 
 
 if __name__ == "__main__": main()
