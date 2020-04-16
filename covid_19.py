@@ -3,16 +3,11 @@
 # Library Imports
 from Bio import SeqIO
 from Bio import Phylo
-# from ete3 import Tree
 import get_edges as ge
 import main_script as ms
-import matplotlib.pyplot as plt
-from matplotlib import cm
 import operator
 import os, shutil, sys
 import threading
-from treetime import TreeTime
-from treetime.utils import parse_dates
 import xlrd
 import tnet_treetime as tnet
 
@@ -270,26 +265,6 @@ def create_treetime_metadata():
 	f1.close()
 	f2.close()
 
-def run_treetime():
-	data_dir = 'covid_19/NCBI/'
-	newick = data_dir + 'RAxML_output_complete/RAxML_bestTree.rooted'
-	fasta = data_dir + 'clean_complete_align_sequences.fasta'
-	dates = parse_dates(data_dir + 'treetime_metadata.csv')
-
-	tt = TreeTime(tree = newick, aln = fasta, dates = dates)
-	fig, axs = plt.subplots(1,2, figsize=(18,9))
-	axs[0].set_title("Tree rerooted by treetime", fontsize=18)
-	axs[1].set_title("Optimal divergence-time relationship", fontsize=18)
-	Phylo.draw(tt.tree, show_confidence=False, axes=axs[0],
-	label_func=lambda x:x.name.split('|')[0] if x.is_terminal() else "")
-	tt.plot_root_to_tip(ax=axs[-1])
-	# format_axes(fig, axs)
-	# tt.run(branch_length_mode='input')
-	# print(tt.resolve_polytomies())
-	# print(tt.resolve_polytomies())
-	# print(tt)
-	# print(tt.tree)
-
 def parse_treetime_tree():
 	data_dir = 'covid_19/NCBI/'
 	raxml_tree = data_dir + 'RAxML_output_complete/RAxML_bestTree.rooted'
@@ -472,7 +447,6 @@ def main():
 	# clean_nextstrain_tree()
 	# prepare_nextstrain_tree_for_tnet()
 	# create_treetime_metadata()
-	# run_treetime()
 	# parse_treetime_tree()
 	# treetime_tnet()
 	# create_group_treetime_dated_edges('covid_19/NCBI/treetime_complete/tnet_random_sample.dated_edges', 3)
