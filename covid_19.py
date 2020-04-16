@@ -307,7 +307,7 @@ def run_treetime():
 def parse_treetime_tree():
 	data_dir = 'covid_19/NCBI/'
 	raxml_tree = data_dir + 'RAxML_output_complete/RAxML_bestTree.rooted'
-	treetime_tree = data_dir + 'out_tree.nwk'
+	treetime_tree = data_dir + 'treetime_complete/out_tree.nwk'
 
 	tree1 = Phylo.read(treetime_tree, 'newick')
 	print(len(tree1.get_terminals()) + len(tree1.get_nonterminals()))
@@ -333,11 +333,11 @@ def parse_treetime_tree():
 			node.name = child_parent[first_child]
 
 	# print(tree2)
-	Phylo.write(tree2, data_dir + 'out_tree.out', 'newick')
+	Phylo.write(tree2, data_dir + 'treetime_complete/out_tree.tnet', 'newick')
 
 def treetime_tnet():
-	data_dir = 'covid_19/NCBI/'
-	treetime_tree = data_dir + 'out_tree.out'
+	data_dir = 'covid_19/NCBI/treetime_complete/'
+	treetime_tree = data_dir + 'out_tree.tnet'
 	id_loc = {}
 	id_date = {}
 
@@ -345,9 +345,8 @@ def treetime_tnet():
 	f.readline()
 	for line in f.readlines():
 		parts = line.strip().split(',')
-		# print(parts)
 		id_loc[parts[0]] = parts[3].replace(' ', '')
-		id_date[parts[0]] = parts[4]
+		id_date[parts[0]] = float(parts[4])
 
 	# print(id_loc)
 	# print(id_date)
@@ -372,18 +371,105 @@ def treetime_tnet():
 	tnet.choose_internal_node_host_with_bias(input_tree)
 	# print(input_tree)
 
-	edges = {}
+	edges = []
 	for nonterminal in input_tree.get_nonterminals(order = 'preorder'):
 		if nonterminal.name != nonterminal.clades[0].name:
 			# print(node_date[nonterminal])
-			edges[nonterminal.name + '->' + nonterminal.clades[0].name] = node_date[nonterminal]
+			edges.append([nonterminal.name + '->' + nonterminal.clades[0].name, node_date[nonterminal]])
 		if nonterminal.name != nonterminal.clades[1].name:
 			# print(node_date[nonterminal])
-			edges[nonterminal.name + '->' + nonterminal.clades[1].name] = node_date[nonterminal]
+			edges.append([nonterminal.name + '->' + nonterminal.clades[1].name, node_date[nonterminal]])
 
-	edges = dict(sorted(edges.items(), key=operator.itemgetter(1),reverse=False))
-	for x,y in edges.items():
+	edges = sorted(edges, key=operator.itemgetter(1),reverse=False)
+	result = open(data_dir + 'tnet_bias.dated_edges', 'w+')
+	for edge in edges:
+		result.write('{},{}\n'.format(edge[0], edge[1]))
+
+	result.close()
+
+def create_group_treetime_dated_edges(input_file, groups):
+	edges = []
+	f = open(input_file)
+
+	for line in f.readlines():
+		parts = line.strip().split(',')
+		# print(parts)
+		edges.append([parts[0], float(parts[1])])
+
+	edges = sorted(edges, key=operator.itemgetter(1),reverse=False)
+	# print(edges)
+	edge_count = {}
+
+	for edge in edges:
+		if edge[0] in edge_count:
+			edge_count[edge[0]] += 1
+		else:
+			edge_count[edge[0]] = 1
+
+	edge_count = dict(sorted(edge_count.items(), key=operator.itemgetter(1), reverse=True))
+	# print(edge_count)
+
+	all_dates = [round(edge[1], 2) for edge in edges]
+	all_dates = list(set(all_dates))
+	all_dates.sort()
+	# print(all_dates)
+
+	edge_date_dict = {}
+	for edge in edge_count.keys():
+		edge_date_dict[edge] = [0] * (len(all_dates) - 1)
+
+	# print(edge_date_dict)
+	# edges, edge_count, all_dates all should be sorted before this
+	i = 0
+	for edge in edges:
+		if edge[1] > all_dates[i + 1]:
+			i += 1
+
+		edge_date_dict[edge[0]][i] += 1
+
+	for x, y in edge_date_dict.items():
 		print(x, y)
+
+	result = open(input_file + '.all_date_groups.csv', 'w+')
+	result.write('edges/dates,{}\n'.format(str(all_dates[1:])[1:-1]))
+	for edge, counts in edge_date_dict.items():
+		result.write('{},{}\n'.format(edge, str(counts)[1:-1]))
+
+	result.close()
+
+	min_date = edges[0][1]
+	max_date = edges[-1][1]
+	step_size = (max_date - min_date)/groups
+	# print(min_date, max_date, step_size)
+	steps = []
+
+	for i in range(groups):
+		steps.append(min_date + (i + 1)*step_size)
+
+	print(steps)
+
+	edge_date_groups_dict = {}
+	for edge in edge_count.keys():
+		edge_date_groups_dict[edge] = [0] * len(steps)
+
+	# print(edge_date_groups_dict)
+	# edges, edge_count, steps all should be sorted before this
+	i = 0
+	for edge in edges:
+		if edge[1] > steps[i]:
+			i += 1
+
+		edge_date_groups_dict[edge[0]][i] += 1
+
+	for x, y in edge_date_groups_dict.items():
+		print(x, y)
+
+	result = open(input_file + '.date_groups.csv', 'w+')
+	result.write('edges/dates,{}\n'.format(str(steps)[1:-1]))
+	for edge, counts in edge_date_groups_dict.items():
+		result.write('{},{}\n'.format(edge, str(counts)[1:-1]))
+
+	result.close()
 
 def main():
 	# create_clean_sequences_gisaid('gisaid_cov2020_sequences_world_complete_high_coverage.fasta', 'clean_sequences_test.fasta')
@@ -400,7 +486,8 @@ def main():
 	# create_treetime_metadata()
 	# run_treetime()
 	# parse_treetime_tree()
-	treetime_tnet()
+	# treetime_tnet()
+	create_group_treetime_dated_edges('covid_19/NCBI/treetime_complete/tnet_bias.dated_edges', 3)
 
 
 if __name__ == "__main__": main()
