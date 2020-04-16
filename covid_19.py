@@ -69,8 +69,8 @@ def run_raxml_with_pthreads(fasta_file, bootstrap, threads):
 
 def create_bootstrap_trees():
 	data_dir = 'covid_19/NCBI/'
-	bootstrap_file = data_dir + 'RAxML_output_complete/RAxML_bootstrap.ncbi'
-	bootstrap_folder = data_dir + 'RAxML_output_complete/bootstrap_trees'
+	bootstrap_file = data_dir + 'RAxML_output_april/RAxML_bootstrap.ncbi'
+	bootstrap_folder = data_dir + 'RAxML_output_april/bootstrap_trees'
 
 	if not os.path.exists(bootstrap_folder):
 		os.mkdir(bootstrap_folder)
@@ -83,9 +83,9 @@ def create_bootstrap_trees():
 		file.write(tree_list[i])
 
 def root_bootstrap_trees():
-	data_dir = 'covid_19/NCBI/'
-	bootstrap_folder = data_dir + 'RAxML_output_complete/bootstrap_trees'
-	rooted_bootstrap_folder = data_dir + 'RAxML_output_complete/rooted_bootstrap_trees'
+	data_dir = 'covid_19/NCBI/RAxML_output_april/'
+	bootstrap_folder = data_dir + 'bootstrap_trees'
+	rooted_bootstrap_folder = data_dir + 'rooted_bootstrap_trees'
 	bootstrap_trees = next(os.walk(bootstrap_folder))[2]
 	if not os.path.exists(rooted_bootstrap_folder):
 		os.mkdir(rooted_bootstrap_folder)
@@ -94,6 +94,8 @@ def root_bootstrap_trees():
 		input_tree = bootstrap_folder + '/' + tree
 		output_tree = rooted_bootstrap_folder + '/' + tree
 		root_tree_with_outgroup(input_tree, output_tree, 'NC_045512')
+
+	root_tree_with_outgroup(data_dir + 'RAxML_bestTree.ncbi', data_dir + 'RAxML_bestTree.rooted', 'NC_045512')
 
 def rename_rooted_trees():
 	data_dir = 'covid_19/NCBI/'
@@ -252,7 +254,7 @@ def create_treetime_metadata():
 	data_dir = 'covid_19/NCBI/'
 	output_file = data_dir + 'treetime_metadata.csv'
 
-	f1 = open(data_dir + 'data_table.csv')
+	f1 = open(data_dir + 'sequences.csv')
 	f2 = open(output_file, 'w')
 
 	f1.readline()
@@ -260,14 +262,14 @@ def create_treetime_metadata():
 	for line in f1.readlines():
 		parts = line.split(',')
 		print(line.split(','))
-		f2.write('{},{},{}\n'.format(parts[0], parts[3], parts[2]))
+		f2.write('{},{},{}\n'.format(parts[0], parts[3], parts[2].split(':')[0]))
 
 	f1.close()
 	f2.close()
 
 def parse_treetime_tree():
 	data_dir = 'covid_19/NCBI/'
-	raxml_tree = data_dir + 'RAxML_output_complete/RAxML_bestTree.rooted'
+	raxml_tree = data_dir + 'RAxML_output_april/RAxML_bestTree.rooted'
 	treetime_tree = data_dir + 'treetime_complete/out_tree.nwk'
 
 	tree1 = Phylo.read(treetime_tree, 'newick')
