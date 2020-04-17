@@ -6,6 +6,7 @@ from Bio import Phylo
 import get_edges as ge
 import main_script as ms
 import operator
+import random
 import os, shutil, sys
 import threading
 import xlrd
@@ -13,31 +14,102 @@ import tnet_treetime as tnet
 
 def create_clean_sequences_gisaid(input_fasta, output_fasta):
 	data_dir = 'covid_19/GISAID/'
-	records = list(SeqIO.parse(data_dir + input_fasta, 'fasta'))
-	# wb = xlrd.open_workbook(data_dir + 'gisaid_cov2020_acknowledgement_table.xls')
-	# sheet = wb.sheet_by_index(0)
+	# records = list(SeqIO.parse(data_dir + input_fasta, 'fasta'))
+	f = open(data_dir + input_fasta)
+	out_file = open(data_dir + output_fasta, 'w')
 
-	# id_location_dict = {}
-	# for i in range(4, sheet.nrows):
-	# 	id_location_dict[sheet.cell_value(i, 0)] = sheet.cell_value(i, 2)
+	for line in f.readlines():
+		if line.startswith('>'):
+			print(line.strip())
+			parts = line.split('|')
+			out_file.write('>{}\n'.format(parts[1]))
+		else:
+			out_file.write(line.upper())
 
-	# list_temp = []
+	f.close()
+	out_file.close()
+
+def create_gisaid_metadata(output_file):
+	data_dir = 'covid_19/GISAID/'
+	wb = xlrd.open_workbook(data_dir + 'gisaid_cov2020_acknowledgement_table.xls')
+	sheet = wb.sheet_by_index(0)
+	f = open(data_dir + output_file, 'w+')
+	f.write('name,date,location,area\n')
+
+	for i in range(4, sheet.nrows):
+		name = sheet.cell_value(i, 0)
+		date = sheet.cell_value(i, 3)
+		parts = sheet.cell_value(i, 2).split('/')
+		location = parts[1].strip()
+		if len(parts) > 2:
+			area = parts[2].strip()
+		else:
+			area = ''
+
+		# print(name,date,location,area)
+		f.write('{},{},{},{}\n'.format(name,date,location,area))
+
+	f.close()
+
+def get_id_location_dict(metadata):
+	f = open(metadata)
+	f.readline()
+	id_location_dict = {}
+
+	for line in f.readlines():
+		parts = line.strip().split(',')
+		# print(parts)
+		id_location_dict[parts[0]] = parts[2]
+
+	return id_location_dict
+
+def filter_gisaid_fasta_sequences(min_count, max_count):
+	data_dir = 'covid_19/GISAID/'
+	metadata = data_dir + 'gisaid_cov2020_metadata.csv'
+	fasta_file = data_dir + 'clean_sequences.fasta'
+	output_fasta = data_dir + 'filtered_clean_sequences.fasta'
+	id_location_dict = get_id_location_dict(metadata)
+	records = list(SeqIO.parse(fasta_file, 'fasta'))
+	country_count_dict = {}
+
 	for record in records:
-		accession_id = record.id.split('|')[1]
-		# parts = id_location_dict[accession_id].split('/')
-		# print(accession_id, parts)
-		# if len(parts) < 3:
-		# 	print('Unknown')
-		# else:
-		# 	print(parts[2])
-		# list_temp.append(len(record.seq))
-		record.id = accession_id
-		record.name = ''
-		record.description = ''
+		country = id_location_dict[record.id]
+		if country in country_count_dict:
+			country_count_dict[country] += 1
+		else:
+			country_count_dict[country] = 1
 
-	# print(min(list_temp), max(list_temp))
+	country_count_dict = dict(sorted(country_count_dict.items(), key=operator.itemgetter(1), reverse=True))
+	new_count_dict = {}
+	print('Total countries:', len(country_count_dict))
+	print('Total sequences:', sum(list(country_count_dict.values())))
 
-	SeqIO.write(records[0:10], data_dir + output_fasta, 'fasta')
+	for x, y in country_count_dict.items():
+		# print(x,y)
+		if y >= min_count:
+			new_count_dict[x] = 0
+
+	# print(len(new_count_dict))
+	new_records = []
+	random.shuffle(records)
+	
+	for record in records:
+		country = id_location_dict[record.id]
+		if country in new_count_dict and new_count_dict[country] < max_count:
+			new_count_dict[country] += 1
+			new_records.append(record)
+
+	print('Total countries:', len(new_count_dict))
+	print('Total sequences:', sum(list(new_count_dict.values())))
+	SeqIO.write(new_records, output_fasta, 'fasta')
+
+def align_gisaid_sequences():
+	data_dir = 'covid_19/GISAID/'
+	input_fasta = data_dir + 'filtered_clean_sequences.fasta'
+	output_fasta = data_dir + 'filtered_clean_sequences.align'
+
+	cmd = 'clustalo -i {} -o {} -v --threads {}'.format(input_fasta, output_fasta, 60)
+	os.system(cmd)
 
 def create_clean_sequences_ncbi(input_fasta, output_fasta):
 	data_dir = 'covid_19/NCBI/'
@@ -436,10 +508,33 @@ def create_group_treetime_dated_edges(input_file, groups):
 
 	result.close()
 
+def get_location_info(input_file):
+	f = open(input_file)
+	f.readline()
+	country_count_dict = {}
+
+	for line in f.readlines():
+		parts = line.strip().split('\t')
+		country = parts[3]
+		if country in country_count_dict:
+			country_count_dict[country] += 1
+		else:
+			country_count_dict[country] = 1
+
+	country_count_dict = dict(sorted(country_count_dict.items(), key=operator.itemgetter(1), reverse=True))
+
+	print('Total countries:', len(country_count_dict))
+	print('Total sequences:', sum(list(country_count_dict.values())))
+	for x, y in country_count_dict.items():
+		print(x,y)
+
 def main():
-	# create_clean_sequences_gisaid('gisaid_cov2020_sequences_world_complete_high_coverage.fasta', 'clean_sequences_test.fasta')
+	# create_clean_sequences_gisaid('gisaid_cov2020_sequences.fasta', 'clean_sequences.fasta')
+	# create_gisaid_metadata('gisaid_cov2020_metadata.csv')
+	# filter_gisaid_fasta_sequences(10, 100)
+	align_gisaid_sequences()
 	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences.aln', 'clean_complete_align_sequences.fasta')
-	run_raxml_with_pthreads('clean_complete_align_sequences.fasta', 100, 50)
+	# run_raxml_with_pthreads('clean_complete_align_sequences.fasta', 100, 50)
 	# create_bootstrap_trees()
 	# root_bootstrap_trees()
 	# rename_rooted_trees()
@@ -452,6 +547,7 @@ def main():
 	# parse_treetime_tree()
 	# treetime_tnet()
 	# create_group_treetime_dated_edges('covid_19/NCBI/treetime_complete/tnet_random_sample.dated_edges', 3)
+	# get_location_info('covid_19/nextstrain/nextstrain_ncov_global_metadata.tsv')
 
 
 if __name__ == "__main__": main()
