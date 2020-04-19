@@ -127,15 +127,15 @@ def create_clean_sequences_ncbi(input_fasta, output_fasta):
 
 	SeqIO.write(records, data_dir + output_fasta, 'fasta')
 
-def run_raxml_with_pthreads(fasta_file, bootstrap, threads):
-	data_dir = 'covid_19/NCBI/'
-	RAxML_folder = os.path.abspath(data_dir + '/RAxML_output_april')
-	input_file = os.path.abspath(data_dir + fasta_file)
+def run_raxml_with_pthreads(bootstrap, threads):
+	data_dir = 'covid_19/GISAID/'
+	RAxML_folder = os.path.abspath(data_dir + 'RAxML_output_filtered_clean_sequences')
+	input_file = os.path.abspath(data_dir + 'filtered_clean_sequences.align')
 
 	if not os.path.exists(RAxML_folder):
 		os.mkdir(RAxML_folder)
 
-	cmd = 'raxmlHPC-PTHREADS -T {} -f a -m GTRGAMMA -p 12345 -x 12345 -s {} -w {} -N {} -n ncbi -k'.format(threads, input_file, RAxML_folder, bootstrap)
+	cmd = 'raxmlHPC-PTHREADS -T {} -f a -m GTRGAMMA -p 12345 -x 12345 -s {} -w {} -N {} -n GISAID -k'.format(threads, input_file, RAxML_folder, bootstrap)
 	# print(cmd)
 	os.system(cmd)
 
@@ -532,9 +532,9 @@ def main():
 	# create_clean_sequences_gisaid('gisaid_cov2020_sequences.fasta', 'clean_sequences.fasta')
 	# create_gisaid_metadata('gisaid_cov2020_metadata.csv')
 	# filter_gisaid_fasta_sequences(10, 100)
-	align_gisaid_sequences()
+	# align_gisaid_sequences()
 	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences.aln', 'clean_complete_align_sequences.fasta')
-	# run_raxml_with_pthreads('clean_complete_align_sequences.fasta', 100, 50)
+	run_raxml_with_pthreads(100, 50)
 	# create_bootstrap_trees()
 	# root_bootstrap_trees()
 	# rename_rooted_trees()
