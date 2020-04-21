@@ -85,13 +85,13 @@ def filter_gisaid_fasta_sequences(min_count, max_count):
 	print('Total sequences:', sum(list(country_count_dict.values())))
 
 	for x, y in country_count_dict.items():
-		# print(x,y)
 		if y >= min_count:
 			new_count_dict[x] = 0
 
-	# print(len(new_count_dict))
 	new_records = []
 	random.shuffle(records)
+	Wuhan_Hu_1 = next(i for i in range(len(records)) if records[i].id == 'EPI_ISL_402125')
+	records.insert(0, records.pop(Wuhan_Hu_1))
 
 	for record in records:
 		country = id_location_dict[record.id]
@@ -103,12 +103,12 @@ def filter_gisaid_fasta_sequences(min_count, max_count):
 	print('Total sequences:', sum(list(new_count_dict.values())))
 	SeqIO.write(new_records, output_fasta, 'fasta')
 
-def align_gisaid_sequences():
+def align_gisaid_sequences(threads):
 	data_dir = 'covid_19/GISAID/'
 	input_fasta = data_dir + 'filtered_clean_sequences.fasta'
 	output_fasta = data_dir + 'filtered_clean_sequences.align'
 
-	cmd = 'clustalo -i {} -o {} -v --threads {}'.format(input_fasta, output_fasta, 60)
+	cmd = 'clustalo -i {} -o {} -v --threads {}'.format(input_fasta, output_fasta, threads)
 	os.system(cmd)
 
 def create_clean_sequences_ncbi(input_fasta, output_fasta):
@@ -493,35 +493,6 @@ def create_group_treetime_dated_edges(input_file, groups):
 			edge_count[edge[0]] = 1
 
 	edge_count = dict(sorted(edge_count.items(), key=operator.itemgetter(1), reverse=True))
-	# print(edge_count)
-
-	# all_dates = [round(edge[1], 2) for edge in edges]
-	# all_dates = list(set(all_dates))
-	# all_dates.sort()
-	# # print(all_dates)
-
-	# edge_date_dict = {}
-	# for edge in edge_count.keys():
-	# 	edge_date_dict[edge] = [0] * (len(all_dates) - 1)
-
-	# # print(edge_date_dict)
-	# # edges, edge_count, all_dates all should be sorted before this
-	# i = 0
-	# for edge in edges:
-	# 	if edge[1] > all_dates[i + 1]:
-	# 		i += 1
-
-	# 	edge_date_dict[edge[0]][i] += 1
-
-	# # for x, y in edge_date_dict.items():
-	# # 	print(x, y)
-
-	# result = open(input_file + '.all_date_groups.csv', 'w+')
-	# result.write('edges/dates,{}\n'.format(str(all_dates[1:])[1:-1]))
-	# for edge, counts in edge_date_dict.items():
-	# 	result.write('{},{}\n'.format(edge, str(counts)[1:-1]))
-
-	# result.close()
 
 	min_date = edges[0][1]
 	max_date = edges[-1][1]
@@ -581,7 +552,7 @@ def main():
 	# create_clean_sequences_gisaid('gisaid_cov2020_sequences.fasta', 'clean_sequences.fasta')
 	# create_gisaid_metadata('gisaid_cov2020_metadata.csv')
 	# filter_gisaid_fasta_sequences(10, 100)
-	# align_gisaid_sequences()
+	align_gisaid_sequences(60)
 	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences.aln', 'clean_complete_align_sequences.fasta')
 	# run_raxml_with_pthreads(100, 50)
 	# create_bootstrap_trees()
@@ -595,8 +566,8 @@ def main():
 	# create_treetime_metadata()
 	# parse_treetime_tree()
 	# treetime_tnet()
-	treetime_tnet_multiple(100)
-	create_group_treetime_dated_edges('covid_19/NCBI/march/treetime_complete/tnet_bias.100_times.dated_edges', 8)
+	# treetime_tnet_multiple(100)
+	# create_group_treetime_dated_edges('covid_19/NCBI/march/treetime_complete/tnet_bias.100_times.dated_edges', 8)
 	# get_location_info('covid_19/nextstrain/nextstrain_ncov_global_metadata.tsv')
 
 
