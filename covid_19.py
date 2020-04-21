@@ -92,7 +92,7 @@ def filter_gisaid_fasta_sequences(min_count, max_count):
 	# print(len(new_count_dict))
 	new_records = []
 	random.shuffle(records)
-	
+
 	for record in records:
 		country = id_location_dict[record.id]
 		if country in new_count_dict and new_count_dict[country] < max_count:
