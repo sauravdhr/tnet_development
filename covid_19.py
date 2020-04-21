@@ -140,9 +140,9 @@ def run_raxml_with_pthreads(bootstrap, threads):
 	os.system(cmd)
 
 def create_bootstrap_trees():
-	data_dir = 'covid_19/NCBI/'
-	bootstrap_file = data_dir + 'RAxML_output_april/RAxML_bootstrap.ncbi'
-	bootstrap_folder = data_dir + 'RAxML_output_april/bootstrap_trees'
+	data_dir = 'covid_19/GISAID/'
+	bootstrap_file = data_dir + 'RAxML_output_filtered_clean_sequences/RAxML_bootstrap.GISAID'
+	bootstrap_folder = data_dir + 'RAxML_output_filtered_clean_sequences/bootstrap_trees'
 
 	if not os.path.exists(bootstrap_folder):
 		os.mkdir(bootstrap_folder)
@@ -155,7 +155,7 @@ def create_bootstrap_trees():
 		file.write(tree_list[i])
 
 def root_bootstrap_trees():
-	data_dir = 'covid_19/NCBI/RAxML_output_april/'
+	data_dir = 'covid_19/GISAID/RAxML_output_filtered_clean_sequences/'
 	bootstrap_folder = data_dir + 'bootstrap_trees'
 	rooted_bootstrap_folder = data_dir + 'rooted_bootstrap_trees'
 	bootstrap_trees = next(os.walk(bootstrap_folder))[2]
@@ -167,7 +167,7 @@ def root_bootstrap_trees():
 		output_tree = rooted_bootstrap_folder + '/' + tree
 		root_tree_with_outgroup(input_tree, output_tree, 'NC_045512')
 
-	root_tree_with_outgroup(data_dir + 'RAxML_bestTree.ncbi', data_dir + 'RAxML_bestTree.rooted', 'NC_045512')
+	root_tree_with_outgroup(data_dir + 'RAxML_bestTree.GISAID', data_dir + 'RAxML_bestTree.rooted', 'NC_045512')
 
 def rename_rooted_trees():
 	data_dir = 'covid_19/NCBI/'
@@ -424,6 +424,55 @@ def treetime_tnet():
 
 	result.close()
 
+def treetime_tnet_multiple(times):
+	data_dir = 'covid_19/NCBI/march/treetime_complete/'
+	treetime_tree = data_dir + 'out_tree.tnet'
+	output_file = data_dir + 'tnet_bias.' + str(times) + '_times.dated_edges'
+	id_loc = {}
+	id_date = {}
+
+	f = open(data_dir + 'out_metadata.csv')
+	f.readline()
+	for line in f.readlines():
+		parts = line.strip().split(',')
+		id_loc[parts[0]] = parts[3].replace(' ', '')
+		id_date[parts[0]] = float(parts[4])
+
+	input_tree = Phylo.read(treetime_tree, 'newick')
+	node_date = {}
+
+	for node in input_tree.get_terminals():
+		node_date[node] = id_date[node.name]
+		node.name = id_loc[node.name]
+
+	for node in input_tree.get_nonterminals():
+		node_date[node] = id_date[node.name]
+		node.name = id_loc[node.name]
+
+	tnet.initialize_leaf_nodes(input_tree)
+	tnet.initialize_internal_nodes(input_tree)
+
+	edges = []
+	for i in range(times):
+		print('Run:', i)
+		input_tree.root.name = tnet.choose_root_host(input_tree.root)
+		tnet.choose_internal_node_host_with_bias(input_tree)
+		info_file = data_dir + 'tnet_bias_multiple/run_' + str(i)
+		tnet.write_info_file(info_file, input_tree)
+
+		for nonterminal in input_tree.get_nonterminals(order = 'preorder'):
+			if nonterminal.name != nonterminal.clades[0].name:
+				edges.append([nonterminal.name + '->' + nonterminal.clades[0].name, node_date[nonterminal]])
+			if nonterminal.name != nonterminal.clades[1].name:
+				edges.append([nonterminal.name + '->' + nonterminal.clades[1].name, node_date[nonterminal]])
+
+	# edges = sorted(edges, key=operator.itemgetter(1),reverse=False)
+	result = open(output_file, 'w+')
+	for edge in edges:
+		result.write('{},{}\n'.format(edge[0], edge[1]))
+
+	result.close()
+
 def create_group_treetime_dated_edges(input_file, groups):
 	edges = []
 	f = open(input_file)
@@ -446,33 +495,33 @@ def create_group_treetime_dated_edges(input_file, groups):
 	edge_count = dict(sorted(edge_count.items(), key=operator.itemgetter(1), reverse=True))
 	# print(edge_count)
 
-	all_dates = [round(edge[1], 2) for edge in edges]
-	all_dates = list(set(all_dates))
-	all_dates.sort()
-	# print(all_dates)
+	# all_dates = [round(edge[1], 2) for edge in edges]
+	# all_dates = list(set(all_dates))
+	# all_dates.sort()
+	# # print(all_dates)
 
-	edge_date_dict = {}
-	for edge in edge_count.keys():
-		edge_date_dict[edge] = [0] * (len(all_dates) - 1)
+	# edge_date_dict = {}
+	# for edge in edge_count.keys():
+	# 	edge_date_dict[edge] = [0] * (len(all_dates) - 1)
 
-	# print(edge_date_dict)
-	# edges, edge_count, all_dates all should be sorted before this
-	i = 0
-	for edge in edges:
-		if edge[1] > all_dates[i + 1]:
-			i += 1
+	# # print(edge_date_dict)
+	# # edges, edge_count, all_dates all should be sorted before this
+	# i = 0
+	# for edge in edges:
+	# 	if edge[1] > all_dates[i + 1]:
+	# 		i += 1
 
-		edge_date_dict[edge[0]][i] += 1
+	# 	edge_date_dict[edge[0]][i] += 1
 
-	# for x, y in edge_date_dict.items():
-	# 	print(x, y)
+	# # for x, y in edge_date_dict.items():
+	# # 	print(x, y)
 
-	result = open(input_file + '.all_date_groups.csv', 'w+')
-	result.write('edges/dates,{}\n'.format(str(all_dates[1:])[1:-1]))
-	for edge, counts in edge_date_dict.items():
-		result.write('{},{}\n'.format(edge, str(counts)[1:-1]))
+	# result = open(input_file + '.all_date_groups.csv', 'w+')
+	# result.write('edges/dates,{}\n'.format(str(all_dates[1:])[1:-1]))
+	# for edge, counts in edge_date_dict.items():
+	# 	result.write('{},{}\n'.format(edge, str(counts)[1:-1]))
 
-	result.close()
+	# result.close()
 
 	min_date = edges[0][1]
 	max_date = edges[-1][1]
@@ -534,7 +583,7 @@ def main():
 	# filter_gisaid_fasta_sequences(10, 100)
 	# align_gisaid_sequences()
 	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences.aln', 'clean_complete_align_sequences.fasta')
-	run_raxml_with_pthreads(100, 50)
+	# run_raxml_with_pthreads(100, 50)
 	# create_bootstrap_trees()
 	# root_bootstrap_trees()
 	# rename_rooted_trees()
@@ -546,7 +595,8 @@ def main():
 	# create_treetime_metadata()
 	# parse_treetime_tree()
 	# treetime_tnet()
-	# create_group_treetime_dated_edges('covid_19/NCBI/treetime_complete/tnet_random_sample.dated_edges', 3)
+	treetime_tnet_multiple(100)
+	create_group_treetime_dated_edges('covid_19/NCBI/march/treetime_complete/tnet_bias.100_times.dated_edges', 8)
 	# get_location_info('covid_19/nextstrain/nextstrain_ncov_global_metadata.tsv')
 
 
