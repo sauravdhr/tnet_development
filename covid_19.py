@@ -129,7 +129,7 @@ def create_clean_sequences_ncbi(input_fasta, output_fasta):
 
 def run_raxml_with_pthreads(bootstrap, threads):
 	data_dir = 'covid_19/GISAID/'
-	RAxML_folder = os.path.abspath(data_dir + 'RAxML_output_filtered_clean_sequences')
+	RAxML_folder = os.path.abspath(data_dir + 'RAxML_filtered_clean_sequences')
 	input_file = os.path.abspath(data_dir + 'filtered_clean_sequences.align')
 
 	if not os.path.exists(RAxML_folder):
@@ -552,9 +552,9 @@ def main():
 	# create_clean_sequences_gisaid('gisaid_cov2020_sequences.fasta', 'clean_sequences.fasta')
 	# create_gisaid_metadata('gisaid_cov2020_metadata.csv')
 	# filter_gisaid_fasta_sequences(10, 100)
-	align_gisaid_sequences(60)
+	# align_gisaid_sequences(60)
 	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences.aln', 'clean_complete_align_sequences.fasta')
-	# run_raxml_with_pthreads(100, 50)
+	run_raxml_with_pthreads(100, 60)
 	# create_bootstrap_trees()
 	# root_bootstrap_trees()
 	# rename_rooted_trees()
