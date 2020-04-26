@@ -141,8 +141,8 @@ def run_raxml_with_pthreads(bootstrap, threads):
 
 def create_bootstrap_trees():
 	data_dir = 'covid_19/GISAID/'
-	bootstrap_file = data_dir + 'RAxML_output_filtered_clean_sequences/RAxML_bootstrap.GISAID'
-	bootstrap_folder = data_dir + 'RAxML_output_filtered_clean_sequences/bootstrap_trees'
+	bootstrap_file = data_dir + 'RAxML_filtered_clean_sequences/RAxML_bootstrap.GISAID'
+	bootstrap_folder = data_dir + 'RAxML_filtered_clean_sequences/bootstrap_trees'
 
 	if not os.path.exists(bootstrap_folder):
 		os.mkdir(bootstrap_folder)
@@ -155,7 +155,7 @@ def create_bootstrap_trees():
 		file.write(tree_list[i])
 
 def root_bootstrap_trees():
-	data_dir = 'covid_19/GISAID/RAxML_output_filtered_clean_sequences/'
+	data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/'
 	bootstrap_folder = data_dir + 'bootstrap_trees'
 	rooted_bootstrap_folder = data_dir + 'rooted_bootstrap_trees'
 	bootstrap_trees = next(os.walk(bootstrap_folder))[2]
@@ -165,9 +165,10 @@ def root_bootstrap_trees():
 	for tree in bootstrap_trees:
 		input_tree = bootstrap_folder + '/' + tree
 		output_tree = rooted_bootstrap_folder + '/' + tree
-		root_tree_with_outgroup(input_tree, output_tree, 'NC_045512')
+		print('Rooting', input_tree)
+		root_tree_with_outgroup(input_tree, output_tree, 'EPI_ISL_402125')
 
-	root_tree_with_outgroup(data_dir + 'RAxML_bestTree.GISAID', data_dir + 'RAxML_bestTree.rooted', 'NC_045512')
+	root_tree_with_outgroup(data_dir + 'RAxML_bestTree.GISAID', data_dir + 'RAxML_bestTree.rooted', 'EPI_ISL_402125')
 
 def rename_rooted_trees():
 	data_dir = 'covid_19/NCBI/'
@@ -232,8 +233,11 @@ def run_tnet_bootstrap_trees(times):
 
 def root_tree_with_outgroup(input_file, output_file, outgroup):
 	input_tree = Phylo.read(input_file, 'newick')
-	input_tree.root_with_outgroup({'name': outgroup})
-	Phylo.write(input_tree, output_file, 'newick')
+	try:
+		input_tree.root_with_outgroup({'name': outgroup})
+		Phylo.write(input_tree, output_file, 'newick')
+	except:
+		print('Could not root', input_file)
 
 def create_directed_tnet_bootstrap_summary(tree_folder, threshold):
 	data_dir = 'covid_19/NCBI/'
@@ -554,9 +558,9 @@ def main():
 	# filter_gisaid_fasta_sequences(10, 100)
 	# align_gisaid_sequences(60)
 	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences.aln', 'clean_complete_align_sequences.fasta')
-	run_raxml_with_pthreads(100, 60)
+	# run_raxml_with_pthreads(100, 60)
 	# create_bootstrap_trees()
-	# root_bootstrap_trees()
+	root_bootstrap_trees()
 	# rename_rooted_trees()
 	# run_tnet_best_tree(100)
 	# run_tnet_bootstrap_trees(100)
