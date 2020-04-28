@@ -343,13 +343,8 @@ def create_treetime_metadata():
 	f1.close()
 	f2.close()
 
-def parse_treetime_tree():
-	data_dir = 'covid_19/GISAID/'
-	raxml_tree = data_dir + 'RAxML_filtered_clean_sequences/RAxML_bestTree.rooted'
-	treetime_tree = data_dir + 'RAxML_filtered_clean_sequences/treetime_besttree/out_tree.nwk'
-
+def parse_treetime_tree(treetime_tree, raxml_tree, output_tree):
 	tree1 = Phylo.read(treetime_tree, 'newick')
-	# print(tree1)
 	print(len(tree1.get_terminals()) + len(tree1.get_nonterminals()))
 	child_parent = {}
 
@@ -371,7 +366,17 @@ def parse_treetime_tree():
 			node.name = child_parent[first_child]
 
 	# print(tree2)
-	Phylo.write(tree2, data_dir + 'RAxML_filtered_clean_sequences/treetime_besttree/out_tree.tnet', 'newick')
+	Phylo.write(tree2, output_tree, 'newick')
+
+def parse_treetime_bootstrap_trees(bootstrap):
+	data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/'
+
+	for i in range(bootstrap):
+		raxml_tree = data_dir + 'rooted_bootstrap_trees/' + str(i) + '.bootstrap.tree'
+		treetime_tree = data_dir + 'treetime_bootstrap_' + str(i) + '/out_tree.nwk'
+		output_tree = data_dir + 'treetime_bootstrap_' + str(i) + '/out_tree.tnet'
+		# print(treetime_tree, raxml_tree, output_tree)
+		parse_treetime_tree(treetime_tree, raxml_tree, output_tree)
 
 def treetime_tnet():
 	data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/'
@@ -431,10 +436,10 @@ def treetime_tnet():
 
 	result.close()
 
-def treetime_tnet_multiple(times):
-	data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/'
+def treetime_tnet_multiple(data_dir, times):
+	# data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/'
 	treetime_tree = data_dir + 'out_tree.tnet'
-	output_file = data_dir + 'tnet_random_sample.' + str(times) + '_times.dated_edges'
+	output_file = data_dir + 'tnet_bias.' + str(times) + '_times.dated_edges'
 	id_loc = {}
 	id_date = {}
 
@@ -466,7 +471,7 @@ def treetime_tnet_multiple(times):
 	for i in range(times):
 		print('Run:', i)
 		input_tree.root.name = tnet.choose_root_host(input_tree.root)
-		tnet.choose_internal_node_host(input_tree)
+		tnet.choose_internal_node_host_with_bias(input_tree)
 		# info_file = data_dir + 'tnet_bias_multiple/run_' + str(i)
 		# tnet.write_info_file(info_file, input_tree)
 
@@ -538,6 +543,25 @@ def create_group_treetime_dated_edges(input_file, groups):
 
 	result.close()
 
+def create_gisaid_bootstrap_dated_edges_tnet(bootstrap):
+	data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/'
+
+	for i in range(bootstrap):
+		input_folder = data_dir + 'treetime_bootstrap_' + str(i) + '/'
+		treetime_tnet_multiple(input_folder, 100)
+
+def create_gisaid_bootstrap_dated_edges_groups(bootstrap, groups):
+	data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/'
+	output_file = data_dir + 'tnet_bootstrap_output/tnet_random_sample.' + str(bootstrap) + '_bootstrap.dated_edges'
+	f = open(output_file, "w")
+
+	for i in range(bootstrap):
+		bootstrap_dated_edges_file = data_dir + 'treetime_bootstrap_' + str(i) + '/tnet_random_sample.100_times.dated_edges'
+		f.write(open(bootstrap_dated_edges_file).read())
+
+	f.close()
+	create_group_treetime_dated_edges(output_file, groups)
+
 def get_location_info(input_file):
 	f = open(input_file)
 	f.readline()
@@ -586,9 +610,12 @@ def main():
 	# prepare_nextstrain_tree_for_tnet()
 	# create_treetime_metadata()
 	# parse_treetime_tree()
+	# parse_treetime_bootstrap_trees(10)
 	# treetime_tnet()
-	treetime_tnet_multiple(100)
-	create_group_treetime_dated_edges('covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/tnet_random_sample.100_times.dated_edges', 8)
+	# treetime_tnet_multiple(100)
+	# create_gisaid_bootstrap_dated_edges_tnet(10)
+	create_gisaid_bootstrap_dated_edges_groups(10, 8)
+	# create_group_treetime_dated_edges('covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/tnet_random_sample.100_times.dated_edges', 8)
 	# get_location_info('covid_19/nextstrain/nextstrain_ncov_global_metadata.tsv')
 
 
