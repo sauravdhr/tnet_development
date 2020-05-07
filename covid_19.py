@@ -162,13 +162,22 @@ def root_bootstrap_trees():
 	if not os.path.exists(rooted_bootstrap_folder):
 		os.mkdir(rooted_bootstrap_folder)
 
-	for tree in bootstrap_trees:
-		input_tree = bootstrap_folder + '/' + tree
-		output_tree = rooted_bootstrap_folder + '/' + tree
-		print('Rooting', input_tree)
-		root_tree_with_outgroup(input_tree, output_tree, 'EPI_ISL_402125')
+	pangolin = 'EPI_ISL_410721'
+	bat = 'EPI_ISL_402131'
 
-	root_tree_with_outgroup(data_dir + 'RAxML_bestTree.GISAID', data_dir + 'RAxML_bestTree.rooted', 'EPI_ISL_402125')
+	input_tree = Phylo.read(data_dir + 'RAxML_bestTree.GISAID', 'newick')
+	input_tree.prune(pangolin)
+	input_tree.prune(bat)
+
+	Phylo.write(input_tree, data_dir + 'RAxML_bestTree.pruned', 'newick')
+
+	# for tree in bootstrap_trees:
+	# 	input_tree = bootstrap_folder + '/' + tree
+	# 	output_tree = rooted_bootstrap_folder + '/' + tree
+	# 	print('Rooting', input_tree)
+	# 	root_tree_with_outgroup(input_tree, output_tree, 'EPI_ISL_402125')
+
+	root_tree_with_outgroup(data_dir + 'RAxML_bestTree.pruned', data_dir + 'RAxML_bestTree.rooted', 'EPI_ISL_402125')
 
 def rename_rooted_trees():
 	data_dir = 'covid_19/NCBI/'
@@ -381,7 +390,7 @@ def parse_treetime_bootstrap_trees(bootstrap):
 def treetime_tnet():
 	data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/'
 	treetime_tree = data_dir + 'out_tree.tnet'
-	output_file = data_dir + 'tnet_bias.dated_edges'
+	output_file = data_dir + 'tnet_random_sample.dated_edges'
 	id_loc = {}
 	id_date = {}
 
@@ -389,10 +398,14 @@ def treetime_tnet():
 	header = f.readline().strip().split(',')
 	loc_i = header.index('location')
 	date_i = header.index('numdate')
+	area_i = header.index('area')
 
 	for line in f.readlines():
 		parts = line.strip().split(',')
-		id_loc[parts[0]] = parts[loc_i].replace(' ', '')
+		location = parts[loc_i]
+		if location == 'United Kingdom':
+			location = parts[area_i]
+		id_loc[parts[0]] = location.replace(' ', '')
 		id_date[parts[0]] = float(parts[date_i])
 
 	# print(id_loc)
@@ -415,7 +428,7 @@ def treetime_tnet():
 	tnet.initialize_leaf_nodes(input_tree)
 	tnet.initialize_internal_nodes(input_tree)
 	input_tree.root.name = tnet.choose_root_host(input_tree.root)
-	tnet.choose_internal_node_host_with_bias(input_tree)
+	tnet.choose_internal_node_host(input_tree)
 	tnet.write_info_file(output_file, input_tree)
 	# print(input_tree)
 
@@ -437,9 +450,9 @@ def treetime_tnet():
 	result.close()
 
 def treetime_tnet_multiple(data_dir, times):
-	# data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/'
+	data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/'
 	treetime_tree = data_dir + 'out_tree.tnet'
-	output_file = data_dir + 'tnet_bias.' + str(times) + '_times.dated_edges'
+	output_file = data_dir + 'tnet_random_sample.' + str(times) + '_times.dated_edges'
 	id_loc = {}
 	id_date = {}
 
@@ -447,10 +460,14 @@ def treetime_tnet_multiple(data_dir, times):
 	header = f.readline().strip().split(',')
 	loc_i = header.index('location')
 	date_i = header.index('numdate')
+	area_i = header.index('area')
 
 	for line in f.readlines():
 		parts = line.strip().split(',')
-		id_loc[parts[0]] = parts[loc_i].replace(' ', '')
+		location = parts[loc_i]
+		if location == 'United Kingdom':
+			location = parts[area_i]
+		id_loc[parts[0]] = location.replace(' ', '')
 		id_date[parts[0]] = float(parts[date_i])
 
 	input_tree = Phylo.read(treetime_tree, 'newick')
@@ -471,7 +488,7 @@ def treetime_tnet_multiple(data_dir, times):
 	for i in range(times):
 		print('Run:', i)
 		input_tree.root.name = tnet.choose_root_host(input_tree.root)
-		tnet.choose_internal_node_host_with_bias(input_tree)
+		tnet.choose_internal_node_host(input_tree)
 		# info_file = data_dir + 'tnet_bias_multiple/run_' + str(i)
 		# tnet.write_info_file(info_file, input_tree)
 
@@ -609,13 +626,15 @@ def main():
 	# clean_nextstrain_tree()
 	# prepare_nextstrain_tree_for_tnet()
 	# create_treetime_metadata()
-	# parse_treetime_tree()
+	# parse_treetime_tree('covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/out_tree.nwk',
+	# 					'covid_19/GISAID/RAxML_filtered_clean_sequences/RAxML_bestTree.rooted',
+	# 					'covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/out_tree.tnet')
 	# parse_treetime_bootstrap_trees(10)
 	# treetime_tnet()
-	# treetime_tnet_multiple(100)
+	# treetime_tnet_multiple('a', 100)
 	# create_gisaid_bootstrap_dated_edges_tnet(10)
-	create_gisaid_bootstrap_dated_edges_groups(10, 8)
-	# create_group_treetime_dated_edges('covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/tnet_random_sample.100_times.dated_edges', 8)
+	# create_gisaid_bootstrap_dated_edges_groups(10, 8)
+	create_group_treetime_dated_edges('covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/tnet_random_sample.dated_edges', 8)
 	# get_location_info('covid_19/nextstrain/nextstrain_ncov_global_metadata.tsv')
 
 
