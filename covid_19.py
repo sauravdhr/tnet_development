@@ -489,9 +489,9 @@ def treetime_tnet():
 	result.close()
 
 def treetime_tnet_multiple(data_dir, times):
-	data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/'
+	# data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/'
 	treetime_tree = data_dir + 'out_tree.tnet'
-	output_file = data_dir + 'tnet_random_sample.' + str(times) + '_times.dated_edges'
+	output_file = data_dir + 'tnet_bias.' + str(times) + '_times.dated_edges'
 	id_loc = {}
 	id_date = {}
 
@@ -527,7 +527,7 @@ def treetime_tnet_multiple(data_dir, times):
 	for i in range(times):
 		print('Run:', i)
 		input_tree.root.name = tnet.choose_root_host(input_tree.root)
-		tnet.choose_internal_node_host(input_tree)
+		tnet.choose_internal_node_host_with_bias(input_tree)
 		# info_file = data_dir + 'tnet_bias_multiple/run_' + str(i)
 		# tnet.write_info_file(info_file, input_tree)
 
@@ -568,7 +568,7 @@ def create_group_treetime_dated_edges(input_file, groups):
 	min_date = edges[0][1]
 	max_date = edges[-1][1]
 	step_size = (max_date - min_date)/groups
-	# print(min_date, max_date, step_size)
+	print(min_date, max_date, step_size)
 	steps = []
 
 	for i in range(groups):
@@ -608,7 +608,7 @@ def create_gisaid_bootstrap_dated_edges_tnet(bootstrap):
 
 def create_gisaid_bootstrap_dated_edges_groups(bootstrap, groups):
 	data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/'
-	output_file = data_dir + 'tnet_bootstrap_output/tnet_random_sample.' + str(bootstrap) + '_bootstrap.dated_edges'
+	output_file = data_dir + 'tnet_bootstrap_output/tnet_random_sample.100_times.' + str(bootstrap) + '_bootstrap.dated_edges'
 	f = open(output_file, "w")
 
 	for i in range(bootstrap):
@@ -680,7 +680,7 @@ def main():
 	# run_raxml_with_pthreads(100, 60)
 	# create_bootstrap_trees()
 	# prune_bootstrap_trees()
-	root_bootstrap_trees()
+	# root_bootstrap_trees()
 	# run_treetime()
 	# rename_rooted_trees()
 	# run_tnet_best_tree(100)
@@ -696,7 +696,7 @@ def main():
 	# treetime_tnet()
 	# treetime_tnet_multiple('a', 100)
 	# create_gisaid_bootstrap_dated_edges_tnet(10)
-	# create_gisaid_bootstrap_dated_edges_groups(10, 8)
+	create_gisaid_bootstrap_dated_edges_groups(10, 8)
 	# create_group_treetime_dated_edges('covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/tnet_random_sample.dated_edges', 8)
 	# get_location_info('covid_19/nextstrain/nextstrain_ncov_global_metadata.tsv')
 	# analyse_seq_data()
