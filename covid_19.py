@@ -154,28 +154,67 @@ def create_bootstrap_trees():
 		file = open(bootstrap_folder + '/' + str(i) + '.bootstrap.tree', 'w')
 		file.write(tree_list[i])
 
-def root_bootstrap_trees():
+def prune_bootstrap_trees():
 	data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/'
-	bootstrap_folder = data_dir + 'bootstrap_trees'
-	rooted_bootstrap_folder = data_dir + 'rooted_bootstrap_trees'
+	bootstrap_folder = data_dir + 'bootstrap_trees/'
+	pruned_bootstrap_folder = data_dir + 'pruned_bootstrap_trees/'
 	bootstrap_trees = next(os.walk(bootstrap_folder))[2]
-	if not os.path.exists(rooted_bootstrap_folder):
-		os.mkdir(rooted_bootstrap_folder)
+	if not os.path.exists(pruned_bootstrap_folder):
+		os.mkdir(pruned_bootstrap_folder)
 
 	pangolin = 'EPI_ISL_410721'
 	bat = 'EPI_ISL_402131'
-
+	
 	input_tree = Phylo.read(data_dir + 'RAxML_bestTree.GISAID', 'newick')
+
+	for leaf in input_tree.get_terminals():
+		if leaf.name == pangolin:
+			# print(leaf.name, leaf.branch_length)
+			leaf.branch_length = 0.0
+		if leaf.name == bat:
+			# print(leaf.name, leaf.branch_length)
+			leaf.branch_length = 0.0
+
 	input_tree.prune(pangolin)
 	input_tree.prune(bat)
 
 	Phylo.write(input_tree, data_dir + 'RAxML_bestTree.pruned', 'newick')
 
-	# for tree in bootstrap_trees:
-	# 	input_tree = bootstrap_folder + '/' + tree
-	# 	output_tree = rooted_bootstrap_folder + '/' + tree
-	# 	print('Rooting', input_tree)
-	# 	root_tree_with_outgroup(input_tree, output_tree, 'EPI_ISL_402125')
+	for tree in bootstrap_trees:
+		input_tree = bootstrap_folder + tree
+		output_tree = pruned_bootstrap_folder + tree
+		print('Pruning', input_tree)
+		ptree = Phylo.read(input_tree, 'newick')
+
+		for leaf in ptree.get_terminals():
+			if leaf.name == pangolin:
+				# print(leaf.name, leaf.branch_length)
+				leaf.branch_length = 0.0
+			if leaf.name == bat:
+				# print(leaf.name, leaf.branch_length)
+				leaf.branch_length = 0.0
+
+		ptree.prune(pangolin)
+		ptree.prune(bat)
+
+		try:
+			Phylo.write(ptree, output_tree, 'newick')
+		except:
+			print('Could not write', input_tree)
+
+def root_bootstrap_trees():
+	data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/'
+	bootstrap_folder = data_dir + 'pruned_bootstrap_trees'
+	rooted_bootstrap_folder = data_dir + 'rooted_bootstrap_trees'
+	bootstrap_trees = next(os.walk(bootstrap_folder))[2]
+	if not os.path.exists(rooted_bootstrap_folder):
+		os.mkdir(rooted_bootstrap_folder)
+
+	for tree in bootstrap_trees:
+		input_tree = bootstrap_folder + '/' + tree
+		output_tree = rooted_bootstrap_folder + '/' + tree
+		print('Rooting', input_tree)
+		root_tree_with_outgroup(input_tree, output_tree, 'EPI_ISL_402125')
 
 	root_tree_with_outgroup(data_dir + 'RAxML_bestTree.pruned', data_dir + 'RAxML_bestTree.rooted', 'EPI_ISL_402125')
 
@@ -609,6 +648,29 @@ def run_treetime():
 	cmd = 'treetime --aln {} --tree {} --dates {} --outdir {} --keep-root'.format(aln_file, tree_file, dates_file, output_dir)
 	os.system(cmd)
 
+def analyse_seq_data():
+	data_dir = 'covid_19/GISAID/'
+	fasta_file = data_dir + 'clean_sequences.fasta'
+	records = list(SeqIO.parse(fasta_file, 'fasta'))
+	count_dict = {}
+	id_seq_dict = {}
+
+	for record in records:
+		id_seq_dict[record.id] = record.seq
+		count_dict[record.id] = len(record.seq)
+
+	# records = sorted(records, key=operator.itemgetter(3),reverse=False)
+	count_dict = dict(sorted(count_dict.items(), key=operator.itemgetter(1)))
+	# print(count_dict)
+
+	sorted_list = list(count_dict.keys())
+	# print(sorted_list)
+	for i in range(len(sorted_list)):
+		for j in range(i + 1, len(sorted_list)):
+			if id_seq_dict[sorted_list[i]] in id_seq_dict[sorted_list[j]]:
+				print(sorted_list[i], sorted_list[j])
+
+
 def main():
 	# create_clean_sequences_gisaid('gisaid_cov2020_sequences.fasta', 'clean_sequences.fasta')
 	# create_gisaid_metadata('gisaid_cov2020_metadata.csv')
@@ -617,7 +679,8 @@ def main():
 	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences.aln', 'clean_complete_align_sequences.fasta')
 	# run_raxml_with_pthreads(100, 60)
 	# create_bootstrap_trees()
-	# root_bootstrap_trees()
+	# prune_bootstrap_trees()
+	root_bootstrap_trees()
 	# run_treetime()
 	# rename_rooted_trees()
 	# run_tnet_best_tree(100)
@@ -634,8 +697,9 @@ def main():
 	# treetime_tnet_multiple('a', 100)
 	# create_gisaid_bootstrap_dated_edges_tnet(10)
 	# create_gisaid_bootstrap_dated_edges_groups(10, 8)
-	create_group_treetime_dated_edges('covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/tnet_random_sample.dated_edges', 8)
+	# create_group_treetime_dated_edges('covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/tnet_random_sample.dated_edges', 8)
 	# get_location_info('covid_19/nextstrain/nextstrain_ncov_global_metadata.tsv')
+	# analyse_seq_data()
 
 
 if __name__ == "__main__": main()
