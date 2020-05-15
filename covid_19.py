@@ -129,13 +129,13 @@ def create_clean_sequences_ncbi(input_fasta, output_fasta):
 
 def run_raxml_with_pthreads(bootstrap, threads):
 	data_dir = 'covid_19/GISAID/'
-	RAxML_folder = os.path.abspath(data_dir + 'RAxML_filtered_clean_sequences')
+	RAxML_folder = os.path.abspath(data_dir + 'RAxML_nonrapid_reduced')
 	input_file = os.path.abspath(data_dir + 'filtered_clean_sequences.align')
 
 	if not os.path.exists(RAxML_folder):
 		os.mkdir(RAxML_folder)
 
-	cmd = 'raxmlHPC-PTHREADS -T {} -f a -m GTRGAMMA -p 12345 -x 12345 -s {} -w {} -N {} -n GISAID -k'.format(threads, input_file, RAxML_folder, bootstrap)
+	cmd = 'raxmlHPC-PTHREADS -T {} -f o -m GTRGAMMA -p 12345 -b 12345 -s {} -w {} -N {} -n GISAID -k'.format(threads, input_file, RAxML_folder, bootstrap)
 	# print(cmd)
 	os.system(cmd)
 
@@ -677,7 +677,7 @@ def main():
 	# filter_gisaid_fasta_sequences(10, 100)
 	# align_gisaid_sequences(60)
 	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences.aln', 'clean_complete_align_sequences.fasta')
-	# run_raxml_with_pthreads(100, 60)
+	run_raxml_with_pthreads(10, 60)
 	# create_bootstrap_trees()
 	# prune_bootstrap_trees()
 	# root_bootstrap_trees()
@@ -696,7 +696,7 @@ def main():
 	# treetime_tnet()
 	# treetime_tnet_multiple('a', 100)
 	# create_gisaid_bootstrap_dated_edges_tnet(10)
-	create_gisaid_bootstrap_dated_edges_groups(10, 8)
+	# create_gisaid_bootstrap_dated_edges_groups(10, 8)
 	# create_group_treetime_dated_edges('covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/tnet_random_sample.dated_edges', 8)
 	# get_location_info('covid_19/nextstrain/nextstrain_ncov_global_metadata.tsv')
 	# analyse_seq_data()
