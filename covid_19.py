@@ -141,8 +141,8 @@ def run_raxml_with_pthreads(bootstrap, threads):
 
 def create_bootstrap_trees():
 	data_dir = 'covid_19/GISAID/'
-	bootstrap_file = data_dir + 'RAxML_filtered_clean_sequences/RAxML_bootstrap.GISAID'
-	bootstrap_folder = data_dir + 'RAxML_filtered_clean_sequences/bootstrap_trees'
+	bootstrap_file = data_dir + 'RAxML_nonrapid_reduced/RAxML_bootstrap.GISAID'
+	bootstrap_folder = data_dir + 'RAxML_nonrapid_reduced/bootstrap_trees'
 
 	if not os.path.exists(bootstrap_folder):
 		os.mkdir(bootstrap_folder)
@@ -203,8 +203,8 @@ def prune_bootstrap_trees():
 			print('Could not write', input_tree)
 
 def root_bootstrap_trees():
-	data_dir = 'covid_19/GISAID/RAxML_filtered_clean_sequences/'
-	bootstrap_folder = data_dir + 'pruned_bootstrap_trees'
+	data_dir = 'covid_19/GISAID/RAxML_nonrapid_reduced/'
+	bootstrap_folder = data_dir + 'bootstrap_trees'
 	rooted_bootstrap_folder = data_dir + 'rooted_bootstrap_trees'
 	bootstrap_trees = next(os.walk(bootstrap_folder))[2]
 	if not os.path.exists(rooted_bootstrap_folder):
@@ -216,7 +216,7 @@ def root_bootstrap_trees():
 		print('Rooting', input_tree)
 		root_tree_with_outgroup(input_tree, output_tree, 'EPI_ISL_402125')
 
-	root_tree_with_outgroup(data_dir + 'RAxML_bestTree.pruned', data_dir + 'RAxML_bestTree.rooted', 'EPI_ISL_402125')
+	# root_tree_with_outgroup(data_dir + 'RAxML_bestTree.pruned', data_dir + 'RAxML_bestTree.rooted', 'EPI_ISL_402125')
 
 def rename_rooted_trees():
 	data_dir = 'covid_19/NCBI/'
@@ -375,18 +375,23 @@ def prepare_nextstrain_tree_for_tnet():
 	Phylo.write(tree, output_file, 'newick')
 
 def create_treetime_metadata():
-	data_dir = 'covid_19/NCBI/'
-	output_file = data_dir + 'treetime_metadata.csv'
-
-	f1 = open(data_dir + 'sequences.csv')
+	data_dir = 'covid_19/GISAID/'
+	input_file = data_dir + 'gisaid_cov2020_metadata.csv'
+	output_file = data_dir + 'gisaid_filtered_metadata.csv'
+	records = list(SeqIO.parse(data_dir + 'filtered_clean_sequences.align', 'fasta'))
+	f1 = open(input_file)
 	f2 = open(output_file, 'w')
 
-	f1.readline()
-	f2.write('name,date,location\n')
+	seq_map = {}
+
+	f2.write(f1.readline())
 	for line in f1.readlines():
 		parts = line.split(',')
-		print(line.split(','))
-		f2.write('{},{},{}\n'.format(parts[0], parts[3], parts[2].split(':')[0]))
+		seq_map[parts[0]] = line
+
+	for record in records:
+		print(seq_map[record.id])
+		f2.write(seq_map[record.id])
 
 	f1.close()
 	f2.close()
@@ -677,7 +682,7 @@ def main():
 	# filter_gisaid_fasta_sequences(10, 100)
 	# align_gisaid_sequences(60)
 	# create_clean_sequences_ncbi('ncbi_sars-cov-2_complete_sequences.aln', 'clean_complete_align_sequences.fasta')
-	run_raxml_with_pthreads(10, 60)
+	# run_raxml_with_pthreads(10, 60)
 	# create_bootstrap_trees()
 	# prune_bootstrap_trees()
 	# root_bootstrap_trees()
@@ -688,7 +693,7 @@ def main():
 	# create_directed_tnet_bootstrap_summary('tnet_100_with_bias_bootstrap_complete_renamed', 50)
 	# clean_nextstrain_tree()
 	# prepare_nextstrain_tree_for_tnet()
-	# create_treetime_metadata()
+	create_treetime_metadata()
 	# parse_treetime_tree('covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/out_tree.nwk',
 	# 					'covid_19/GISAID/RAxML_filtered_clean_sequences/RAxML_bestTree.rooted',
 	# 					'covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/out_tree.tnet')
