@@ -690,6 +690,22 @@ def analyse_treetime_data():
 
 		print(i, Counter(dates))
 
+def make_augur_metadata(csv_file):
+	data_dir = 'covid_19/GISAID/'
+	metadata = data_dir + csv_file
+	augur_metadata = data_dir + 'augur_filtered_metadata.tsv'
+	out = open(augur_metadata, 'w+')
+	out.write('strain\tvirus\tdate\tcountry\n')
+	f = open(metadata)
+	f.readline()
+
+	for line in f.readlines():
+		parts = line.strip().split(',')
+		print(parts)
+		virus = 'hCoV-19'
+		country = parts[3] if parts[2] == 'United Kingdom' else parts[2]
+		out.write('{}\t{}\t{}\t{}\n'.format(parts[0],virus,parts[1],country))
+
 def main():
 	# create_clean_sequences_gisaid('gisaid_cov2020_sequences.fasta', 'clean_sequences.fasta')
 	# create_gisaid_metadata('gisaid_cov2020_metadata.csv')
@@ -715,11 +731,12 @@ def main():
 	# treetime_tnet()
 	# treetime_tnet_multiple('a', 100)
 	# create_gisaid_bootstrap_dated_edges_tnet(10, 100)
-	create_gisaid_bootstrap_dated_edges_groups(10, 10)
+	# create_gisaid_bootstrap_dated_edges_groups(10, 10)
 	# create_group_treetime_dated_edges('covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/tnet_random_sample.dated_edges', 8)
 	# get_location_info('covid_19/nextstrain/nextstrain_ncov_global_metadata.tsv')
 	# analyse_seq_data()
 	# analyse_treetime_data()
+	make_augur_metadata('gisaid_filtered_metadata.csv')
 
 
 if __name__ == "__main__": main()
