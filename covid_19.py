@@ -5,6 +5,7 @@ from Bio import SeqIO
 from Bio import Phylo
 from collections import Counter
 import get_edges as ge
+import json
 import main_script as ms
 import operator
 import random
@@ -15,14 +16,13 @@ import tnet_treetime as tnet
 
 def create_clean_sequences_gisaid(input_fasta, output_fasta):
 	data_dir = 'covid_19/GISAID/'
-	# records = list(SeqIO.parse(data_dir + input_fasta, 'fasta'))
 	f = open(data_dir + input_fasta)
 	out_file = open(data_dir + output_fasta, 'w')
 
 	for line in f.readlines():
 		if line.startswith('>'):
-			print(line.strip())
 			parts = line.split('|')
+			print(parts[1])
 			out_file.write('>{}\n'.format(parts[1]))
 		else:
 			out_file.write(line.upper())
@@ -559,8 +559,7 @@ def create_group_treetime_dated_edges(input_file, groups):
 		# print(parts)
 		edges.append([parts[0], float(parts[1])])
 
-	edges = sorted(edges, key=operator.itemgetter(1),reverse=False)
-	# print(edges)
+	edges.sort(key=operator.itemgetter(1))
 	edge_count = {}
 
 	for edge in edges:
@@ -654,9 +653,7 @@ def run_treetime():
 	cmd = 'treetime --aln {} --tree {} --dates {} --outdir {} --keep-root'.format(aln_file, tree_file, dates_file, output_dir)
 	os.system(cmd)
 
-def analyse_seq_data():
-	data_dir = 'covid_19/GISAID/'
-	fasta_file = data_dir + 'clean_sequences.fasta'
+def analyse_seq_data(fasta_file):
 	records = list(SeqIO.parse(fasta_file, 'fasta'))
 	count_dict = {}
 	id_seq_dict = {}
@@ -665,16 +662,23 @@ def analyse_seq_data():
 		id_seq_dict[record.id] = record.seq
 		count_dict[record.id] = len(record.seq)
 
-	# records = sorted(records, key=operator.itemgetter(3),reverse=False)
-	count_dict = dict(sorted(count_dict.items(), key=operator.itemgetter(1)))
+	count_dict = dict(sorted(count_dict.items(), key = operator.itemgetter(1)))
 	# print(count_dict)
 
 	sorted_list = list(count_dict.keys())
-	# print(sorted_list)
-	for i in range(len(sorted_list)):
+	# print(len(sorted_list))
+	unique_list = []
+	for i in range(len(sorted_list) - 1):
+		unique = True
 		for j in range(i + 1, len(sorted_list)):
 			if id_seq_dict[sorted_list[i]] in id_seq_dict[sorted_list[j]]:
-				print(sorted_list[i], sorted_list[j])
+				# print(sorted_list[i], sorted_list[j])
+				unique = False
+				break
+		
+		if unique:
+			unique_list.append(sorted_list[i])
+			print(len(unique_list))
 
 def analyse_treetime_data():
 	data_dir = 'covid_19/GISAID/RAxML_nonrapid_reduced/'
@@ -706,8 +710,35 @@ def make_augur_metadata(csv_file):
 		country = parts[3] if parts[2] == 'United Kingdom' else parts[2]
 		out.write('{}\t{}\t{}\t{}\n'.format(parts[0],virus,parts[1],country))
 
+def get_treetime_besttree_dated_edges():
+	bl_json = 'covid_19/GISAID/RAxML_nonrapid_reduced/treetime_bestTree/branch_lengths.json'
+	trait_json = 'covid_19/GISAID/RAxML_nonrapid_reduced/treetime_bestTree/traits.json'
+	treetime_nwk = 'covid_19/GISAID/RAxML_nonrapid_reduced/treetime_bestTree/treetime.nwk'
+	bl_nodes = json.load(open(bl_json))['nodes']
+	trait_nodes = json.load(open(trait_json))['nodes']
+	input_tree = Phylo.read(treetime_nwk, 'newick')
+	
+	dated_edges = 'covid_19/GISAID/RAxML_nonrapid_reduced/treetime_bestTree/treetime.best_tree.dated_edges'
+	edges = []
+
+	for nonterminal in input_tree.get_nonterminals(order = 'preorder'):
+		parent = trait_nodes[nonterminal.name]['country'].replace(' ', '')
+		for clade in nonterminal.clades:
+			child = trait_nodes[clade.name]['country'].replace(' ', '')
+			if parent != child:
+				edges.append([parent + '->' + child, bl_nodes[nonterminal.name]['numdate']])
+
+	edges.sort(key=operator.itemgetter(1))
+	result = open(dated_edges, 'w+')
+
+	for edge, date in edges:
+		result.write('{},{}\n'.format(edge, date))
+
+	result.close()
+	create_group_treetime_dated_edges(dated_edges, 8)
+
 def main():
-	# create_clean_sequences_gisaid('gisaid_cov2020_sequences.fasta', 'clean_sequences.fasta')
+	# create_clean_sequences_gisaid('gisaid_06_12_complete_highcoverage_human.fasta', 'gisaid_06_12_clean.fasta')
 	# create_gisaid_metadata('gisaid_cov2020_metadata.csv')
 	# filter_gisaid_fasta_sequences(10, 100)
 	# align_gisaid_sequences(60)
@@ -732,11 +763,12 @@ def main():
 	# treetime_tnet_multiple('a', 100)
 	# create_gisaid_bootstrap_dated_edges_tnet(10, 100)
 	# create_gisaid_bootstrap_dated_edges_groups(10, 10)
-	# create_group_treetime_dated_edges('covid_19/GISAID/RAxML_filtered_clean_sequences/treetime_besttree/tnet_random_sample.dated_edges', 8)
+	# create_group_treetime_dated_edges('covid_19/GISAID/RAxML_nonrapid_reduced/tnet_bootstrap_output/tnet_random_sample.100_times.10_bootstrap.dated_edges', 8)
 	# get_location_info('covid_19/nextstrain/nextstrain_ncov_global_metadata.tsv')
-	# analyse_seq_data()
+	analyse_seq_data('covid_19/GISAID/gisaid_06_12_clean.fasta')
 	# analyse_treetime_data()
-	make_augur_metadata('gisaid_filtered_metadata.csv')
+	# make_augur_metadata('gisaid_filtered_metadata.csv')
+	# get_treetime_besttree_dated_edges()
 
 
 if __name__ == "__main__": main()
