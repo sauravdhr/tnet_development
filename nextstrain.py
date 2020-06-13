@@ -5,6 +5,7 @@ from Bio import SeqIO
 from Bio import Phylo
 from collections import Counter
 import csv
+import covid_19 as cov
 import get_edges as ge
 import json
 import main_script as ms
@@ -48,13 +49,22 @@ def analize_nextstrain_metadata(metadata):
 	for record in records:
 		if record.id in filtered_sequences:
 			new_records.append(record)
-		# else:
-		# 	print(record.id)
+		else:
+			print(record.id)
 
 	print('new_records', len(new_records))
 	SeqIO.write(new_records, output_fasta, 'fasta')
 
+def align_clean_sequences(threads):
+	data_dir = 'covid_19/nextstrain/'
+	input_fasta = data_dir + 'nextstrain_sequences_06_12.fasta'
+	output_fasta = data_dir + 'nextstrain_sequences_06_12.clustalo.align'
+
+	cmd = 'clustalo -i {} -o {} -v --threads {}'.format(input_fasta, output_fasta, threads)
+	os.system(cmd)
+
 def main():
-	analize_nextstrain_metadata('covid_19/nextstrain/nextstrain_metadata_06_12.tsv')
+	# analize_nextstrain_metadata('covid_19/nextstrain/nextstrain_metadata_06_12.tsv')
+	align_clean_sequences(60)
 
 if __name__ == "__main__": main()
