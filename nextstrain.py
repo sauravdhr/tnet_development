@@ -61,10 +61,23 @@ def align_clean_sequences(threads):
 	output_fasta = data_dir + 'nextstrain_sequences_06_12.clustalo.align'
 
 	cmd = 'clustalo -i {} -o {} -v --threads {}'.format(input_fasta, output_fasta, threads)
+	# cmd = 'mafft --thread {} --nomemsave {} > {}'.format(threads, input_fasta, output_fasta)
+	os.system(cmd)
+
+def run_raxml_multithreaded(bootstrap, threads):
+	data_dir = 'covid_19/nextstrain/'
+	RAxML_folder = os.path.abspath(data_dir + 'RAxML_msa_0612')
+	input_file = os.path.abspath(data_dir + 'msa_0612.align')
+
+	if not os.path.exists(RAxML_folder):
+		os.mkdir(RAxML_folder)
+
+	cmd = 'raxmlHPC-PTHREADS -T {} -f a -m GTRGAMMA -p 12345 -x 12345 -s {} -w {} -N {} -n nextstrain -k'.format(threads, input_file, RAxML_folder, bootstrap)
 	os.system(cmd)
 
 def main():
 	# analize_nextstrain_metadata('covid_19/nextstrain/nextstrain_metadata_06_12.tsv')
-	align_clean_sequences(60)
+	# align_clean_sequences(60)
+	run_raxml_multithreaded(10, 60)
 
 if __name__ == "__main__": main()
