@@ -66,14 +66,15 @@ def align_clean_sequences(threads):
 
 def run_raxml_multithreaded(bootstrap, threads):
 	data_dir = 'covid_19/nextstrain/'
-	RAxML_folder = os.path.abspath(data_dir + 'RAxML_nextstrain_06_12')
+	RAxML_folder = os.path.abspath(data_dir + 'RAxML_nextstrain_06_12_nonrapid')
 	input_file = os.path.abspath(data_dir + 'nextstrain_sequences_06_12.clustalo.align')
 
 	if not os.path.exists(RAxML_folder):
 		os.mkdir(RAxML_folder)
 
-	cmd = 'raxmlHPC-PTHREADS -T {} -f a -m GTRGAMMA -p 12345 -x 12345 -s {} -w {} -N {} -n nextstrain -k'\
-			.format(threads, input_file, RAxML_folder, bootstrap)
+	cmd = 'raxmlHPC-PTHREADS -T {} -f o -m GTRGAMMA -p 12345 -b 12345 -s {} -w {} -N {} -n nextstrain -k'.format(threads, input_file, RAxML_folder, bootstrap)
+	# cmd = 'raxmlHPC-PTHREADS -T {} -f a -m GTRGAMMA -p 12345 -x 12345 -s {} -w {} -N {} -n nextstrain -k'\
+	# 		.format(threads, input_file, RAxML_folder, bootstrap)
 	os.system(cmd)
 
 def create_augur_metadata():
