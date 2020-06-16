@@ -66,8 +66,8 @@ def align_clean_sequences(threads):
 
 def run_raxml_multithreaded(bootstrap, threads):
 	data_dir = 'covid_19/nextstrain/'
-	RAxML_folder = os.path.abspath(data_dir + 'RAxML_msa_0612')
-	input_file = os.path.abspath(data_dir + 'msa_0612.align')
+	RAxML_folder = os.path.abspath(data_dir + 'RAxML_nextstrain_06_12')
+	input_file = os.path.abspath(data_dir + 'nextstrain_sequences_06_12.clustalo.align')
 
 	if not os.path.exists(RAxML_folder):
 		os.mkdir(RAxML_folder)
@@ -145,20 +145,21 @@ def augur_refine(bootstarp_tree, output_tree, node_data_json):
 	data_dir = 'covid_19/nextstrain/'
 	aligned_seq = data_dir + 'msa_0612.align'
 	metadata_tsv = data_dir + 'augur_metadata_06_12.tsv'
+	root = 'EPI_ISL_402125'
 
 	cmd = 'augur refine --tree {} --alignment {} --metadata {} --output-tree {} --output-node-data {}\
-			--keep-root --timetree --coalescent opt --date-inference marginal'\
-			.format(bootstarp_tree, aligned_seq, metadata_tsv, output_tree, node_data_json)
+			--root \'{}\' --timetree --coalescent opt --date-inference marginal'\
+			.format(bootstarp_tree, aligned_seq, metadata_tsv, output_tree, node_data_json, root)
 
 	print(cmd)
 	os.system(cmd)
 
 def refine_bootstrap_trees_treetime(bootstrap):
 	data_dir = 'covid_19/nextstrain/'
-	rooted_bootstrap_folder = data_dir + 'RAxML_msa_0612/rooted_bootstrap_trees'
-	t = []
+	rooted_bootstrap_folder = data_dir + 'RAxML_msa_0612/bootstrap_trees'
+	# t = []
 
-	for i in range(bootstrap):
+	for i in range(bootstrap - 1, bootstrap):
 		bootstarp_tree = rooted_bootstrap_folder + '/' + str(i) + '.bootstrap.tree'
 		tree_folder = data_dir + 'TreeTime_msa_0612/bootstrap_tree_' + str(i)
 		if not os.path.exists(tree_folder):
@@ -167,22 +168,23 @@ def refine_bootstrap_trees_treetime(bootstrap):
 		output_tree = tree_folder + '/treetime.nwk'
 		node_data_json = tree_folder + '/node_data.json'
 		# print(bootstarp_tree, output_tree, node_data_json)
-		t.append(threading.Thread(target=augur_refine, args=(bootstarp_tree, output_tree, node_data_json)))
+		augur_refine(bootstarp_tree, output_tree, node_data_json)
+		# t.append(threading.Thread(target=augur_refine, args=(bootstarp_tree, output_tree, node_data_json)))
 
-	for i in range(bootstrap):
-		t[i].start()
+	# for i in range(bootstrap):
+	# 	t[i].start()
 
-	for i in range(bootstrap):
-		t[i].join()
+	# for i in range(bootstrap):
+	# 	t[i].join()
 
 def main():
 	# analize_nextstrain_metadata('covid_19/nextstrain/nextstrain_metadata_06_12.tsv')
 	# align_clean_sequences(60)
-	# run_raxml_multithreaded(10, 60)
+	run_raxml_multithreaded(10, 60)
 	# create_augur_metadata()
 	# refine_best_tree_treetime()
 	# create_rooted_bootstrap_trees('covid_19/nextstrain/RAxML_msa_0612/')
-	refine_bootstrap_trees_treetime(10)
+	# refine_bootstrap_trees_treetime(10)
 
 
 if __name__ == "__main__": main()
