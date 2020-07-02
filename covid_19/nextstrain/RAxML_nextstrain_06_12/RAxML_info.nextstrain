@@ -2251,8 +2251,8 @@ IMPORTANT WARNING
 Found 1808 columns that contain only undetermined values which will be treated as missing data.
 Normally these columns should be excluded from the analysis.
 
-Just in case you might need it, an alignment file with 
-sequence duplicates and undetermined columns removed is printed to file /data/tnet_development/covid_19/nextstrain/nextstrain_sequences_06_12.clustalo.align.reduced
+An alignment file with undetermined columns and sequence duplicates removed has already
+been printed to file /data/tnet_development/covid_19/nextstrain/nextstrain_sequences_06_12.clustalo.align.reduced
 
 
 Using BFGS method to optimize GTR rate parameters, to disable this specify "--no-bfgs" 
@@ -2281,13 +2281,12 @@ Alignment has 6583 distinct alignment patterns
 
 Proportion of gaps and completely undetermined characters in this alignment: 13.09%
 
-RAxML rapid bootstrapping and subsequent ML search
+RAxML rapid hill-climbing mode
 
 Using 1 distinct models/data partitions with joint branch length optimization
 
 
-
-Executing 10 rapid bootstrap inferences and thereafter a thorough ML search 
+Executing 10 non-parametric bootstrap inferences
 
 All free model parameters will be estimated by RAxML
 GAMMA model of rate heterogeneity, ML estimate of alpha-parameter
@@ -2305,81 +2304,23 @@ Substitution Matrix: GTR
 
 RAxML was called as follows:
 
-raxmlHPC-PTHREADS -T 60 -f a -m GTRGAMMA -p 12345 -x 12345 -s /data/tnet_development/covid_19/nextstrain/nextstrain_sequences_06_12.clustalo.align -w /data/tnet_development/covid_19/nextstrain/RAxML_nextstrain_06_12 -N 10 -n nextstrain -k 
+raxmlHPC-PTHREADS -T 60 -f o -m GTRGAMMA -p 12345 -b 12345 -s /data/tnet_development/covid_19/nextstrain/nextstrain_sequences_06_12.clustalo.align -w /data/tnet_development/covid_19/nextstrain/RAxML_nextstrain_06_12_nonrapid -N 10 -n nextstrain -k 
 
 
-
-Time for BS model parameter optimization 23.592065
-Bootstrap[0]: Time 669.272657 seconds, bootstrap likelihood -101033.084674, best rearrangement setting 13
-Bootstrap[1]: Time 515.354102 seconds, bootstrap likelihood -101060.292263, best rearrangement setting 13
-Bootstrap[2]: Time 524.546432 seconds, bootstrap likelihood -103464.379689, best rearrangement setting 12
-Bootstrap[3]: Time 591.359598 seconds, bootstrap likelihood -102489.542360, best rearrangement setting 15
-Bootstrap[4]: Time 388.292465 seconds, bootstrap likelihood -105859.145280, best rearrangement setting 10
-Bootstrap[5]: Time 384.125694 seconds, bootstrap likelihood -102722.343917, best rearrangement setting 10
-Bootstrap[6]: Time 243.295909 seconds, bootstrap likelihood -106574.403119, best rearrangement setting 6
-Bootstrap[7]: Time 512.384395 seconds, bootstrap likelihood -102617.295011, best rearrangement setting 14
-Bootstrap[8]: Time 213.727430 seconds, bootstrap likelihood -105746.847474, best rearrangement setting 5
-Bootstrap[9]: Time 282.111101 seconds, bootstrap likelihood -104871.809471, best rearrangement setting 7
+Bootstrap[0]: Time 3159.572668 seconds, bootstrap likelihood -88106.901329, best rearrangement setting 25
+Bootstrap[1]: Time 6801.016671 seconds, bootstrap likelihood -87870.174880, best rearrangement setting 10
+Bootstrap[2]: Time 4917.246167 seconds, bootstrap likelihood -88809.220122, best rearrangement setting 25
+Bootstrap[3]: Time 2840.530099 seconds, bootstrap likelihood -87695.321592, best rearrangement setting 25
+Bootstrap[4]: Time 3381.762417 seconds, bootstrap likelihood -89829.412224, best rearrangement setting 25
+Bootstrap[5]: Time 4515.505071 seconds, bootstrap likelihood -87798.063035, best rearrangement setting 25
+Bootstrap[6]: Time 2582.602629 seconds, bootstrap likelihood -88850.067312, best rearrangement setting 20
+Bootstrap[7]: Time 7269.588834 seconds, bootstrap likelihood -88155.696425, best rearrangement setting 25
+Bootstrap[8]: Time 10598.045430 seconds, bootstrap likelihood -88712.852363, best rearrangement setting 15
+Bootstrap[9]: Time 10200.665469 seconds, bootstrap likelihood -87922.505919, best rearrangement setting 25
 
 
-Overall Time for 10 Rapid Bootstraps 4357.051549 seconds
-Average Time per Rapid Bootstrap 435.705155 seconds
-
-Starting ML Search ...
-
-Fast ML optimization finished
-
-Fast ML search Time: 3328.813474 seconds
-
-Slow ML Search 0 Likelihood: -102271.342232
-Slow ML Search 1 Likelihood: -103066.051161
-Slow ML optimization finished
-
-Slow ML search Time: 26227.547407 seconds
-Thorough ML search Time: 686.665583 seconds
-
-Final ML Optimization Likelihood: -90582.934087
-
-Model Information:
-
-Model Parameters of Partition 0, Name: No Name Provided, Type of Data: DNA
-alpha: 0.020000
-Tree-Length: 0.188232
-rate A <-> C: 0.463206
-rate A <-> G: 1.079656
-rate A <-> T: 0.488151
-rate C <-> G: 0.290921
-rate C <-> T: 2.195551
-rate G <-> T: 1.000000
-
-freq pi(A): 0.298832
-freq pi(C): 0.183677
-freq pi(G): 0.196247
-freq pi(T): 0.321244
+Overall Time for 10 Bootstraps 56294.942759
 
 
-ML search took 30243.042919 secs or 8.400845 hours
-
-Combined Bootstrap and ML search took 34600.094507 secs or 9.611137 hours
-
-Drawing Bootstrap Support Values on best-scoring ML tree ...
-
-
-
-Found 1 tree in File /data/tnet_development/covid_19/nextstrain/RAxML_nextstrain_06_12/RAxML_bestTree.nextstrain
-
-
-
-Found 1 tree in File /data/tnet_development/covid_19/nextstrain/RAxML_nextstrain_06_12/RAxML_bestTree.nextstrain
-
-Program execution info written to /data/tnet_development/covid_19/nextstrain/RAxML_nextstrain_06_12/RAxML_info.nextstrain
-All 10 bootstrapped trees written to: /data/tnet_development/covid_19/nextstrain/RAxML_nextstrain_06_12/RAxML_bootstrap.nextstrain
-
-Best-scoring ML tree written to: /data/tnet_development/covid_19/nextstrain/RAxML_nextstrain_06_12/RAxML_bestTree.nextstrain
-
-Best-scoring ML tree with support values written to: /data/tnet_development/covid_19/nextstrain/RAxML_nextstrain_06_12/RAxML_bipartitions.nextstrain
-
-Best-scoring ML tree with support values as branch labels written to: /data/tnet_development/covid_19/nextstrain/RAxML_nextstrain_06_12/RAxML_bipartitionsBranchLabels.nextstrain
-
-Overall execution time for full ML analysis: 34600.288688 secs or 9.611191 hours or 0.400466 days
-
+Average Time per Bootstrap 5629.494276
+All 10 bootstrapped trees written to: /data/tnet_development/covid_19/nextstrain/RAxML_nextstrain_06_12_nonrapid/RAxML_bootstrap.nextstrain
