@@ -109,15 +109,15 @@ def refine_best_tree_treetime():
 	aligned_seq = data_dir + 'nextstrain_sequences_06_12.clustalo.align'
 	metadata_tsv = data_dir + 'augur_metadata_06_12.tsv'
 	best_tree_folder = data_dir + 'TreeTime_nextstrain_06_12/best_tree/'
-	output_tree = best_tree_folder + 'treetime_rooted.nwk'
+	output_tree = best_tree_folder + 'treetime.nwk'
 	node_data_json = best_tree_folder + 'node_data.json'
 	root = 'EPI_ISL_402125'
 	if not os.path.exists(best_tree_folder):
 		os.mkdir(best_tree_folder)
 
 	cmd = 'augur refine --tree {} --alignment {} --metadata {} --output-tree {} --output-node-data {}\
-			--root {} --timetree --branch-length-inference joint --precision 2 --date-inference joint'\
-			.format(best_tree, aligned_seq, metadata_tsv, output_tree, node_data_json, root)
+			--timetree --branch-length-inference joint --precision 2 --date-inference joint'\
+			.format(best_tree, aligned_seq, metadata_tsv, output_tree, node_data_json)
 
 	print(cmd)
 	os.system(cmd)
@@ -148,11 +148,8 @@ def augur_refine(bootstarp_tree, output_tree, node_data_json):
 	aligned_seq = data_dir + 'nextstrain_sequences_06_12.clustalo.align'
 	metadata_tsv = data_dir + 'augur_metadata_06_12.tsv'
 
-	# cmd = 'augur refine --tree {} --alignment {} --metadata {} --output-tree {} --output-node-data {}\
-	# 		--keep-root --timetree --coalescent opt --date-inference marginal'\
-	# 		.format(bootstarp_tree, aligned_seq, metadata_tsv, output_tree, node_data_json)
 	cmd = 'augur refine --tree {} --alignment {} --metadata {} --output-tree {} --output-node-data {}\
-			--keep-root --timetree --branch-length-inference joint --precision 2 --date-inference joint'\
+			--timetree --branch-length-inference joint --precision 2 --date-inference joint'\
 			.format(bootstarp_tree, aligned_seq, metadata_tsv, output_tree, node_data_json)
 
 	print(cmd)
@@ -161,7 +158,7 @@ def augur_refine(bootstarp_tree, output_tree, node_data_json):
 def refine_bootstrap_trees_treetime(bootstrap):
 	data_dir = 'covid_19/nextstrain/'
 	rooted_bootstrap_folder = data_dir + 'RAxML_nextstrain_06_12/rooted_bootstrap_trees'
-	t = []
+	# t = []
 
 	for i in range(bootstrap):
 		bootstarp_tree = rooted_bootstrap_folder + '/' + str(i) + '.bootstrap.tree'
@@ -172,14 +169,14 @@ def refine_bootstrap_trees_treetime(bootstrap):
 		output_tree = tree_folder + '/treetime.nwk'
 		node_data_json = tree_folder + '/node_data.json'
 		# print(bootstarp_tree, output_tree, node_data_json)
-		# augur_refine(bootstarp_tree, output_tree, node_data_json)
+		augur_refine(bootstarp_tree, output_tree, node_data_json)
 		# t.append(threading.Thread(target=augur_refine, args=(bootstarp_tree, output_tree, node_data_json)))
 
-	for i in range(len(t)):
-		t[i].start()
+	# for i in range(len(t)):
+	# 	t[i].start()
 
-	for i in range(len(t)):
-		t[i].join()
+	# for i in range(len(t)):
+	# 	t[i].join()
 
 def infer_traits_best_tree_treetime():
 	data_dir = 'covid_19/nextstrain/'
@@ -369,15 +366,14 @@ def analyze_nextstrain_output():
 	all_dates.sort()
 	print(all_dates[0], all_dates[-1])
 
-
 def main():
 	# analyze_nextstrain_metadata('covid_19/nextstrain/nextstrain_metadata_06_12.tsv')
 	# align_clean_sequences(60)
 	# run_raxml_multithreaded(10, 60)
 	# create_augur_metadata()
-	refine_best_tree_treetime()
+	# refine_best_tree_treetime()
 	# create_rooted_bootstrap_trees('covid_19/nextstrain/RAxML_nextstrain_06_12/')
-	# refine_bootstrap_trees_treetime(10)
+	refine_bootstrap_trees_treetime(10)
 	# infer_traits_best_tree_treetime()
 	# get_best_tree_dated_edges()
 	# create_tnet_bootstrap_treetime(10)
