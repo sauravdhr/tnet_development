@@ -152,15 +152,16 @@ def align_clean_sequences(threads):
 
 def run_raxml_multithreaded(bootstrap, threads):
 	data_dir = 'covid_19/nextstrain/'
-	RAxML_folder = os.path.abspath(data_dir + 'RAxML_nextstrain_06_12')
-	input_file = os.path.abspath(data_dir + 'nextstrain_sequences_06_12.clustalo.align')
+	RAxML_folder = os.path.abspath(data_dir + 'RAxML_usa_07_21')
+	input_file = os.path.abspath(data_dir + 'filtered_sequences_usa_07_21.align')
 
 	if not os.path.exists(RAxML_folder):
 		os.mkdir(RAxML_folder)
 
-	cmd = 'raxmlHPC-PTHREADS -T {} -f o -m GTRGAMMA -p 12345 -b 12345 -s {} -w {} -N {} -n nextstrain -k'.format(threads, input_file, RAxML_folder, bootstrap)
+	cmd = 'raxmlHPC-PTHREADS -T {} -f o -m GTRGAMMA -p 12345 -b 12345 -s {} -w {} -N {} -n usa -k'.format(threads, input_file, RAxML_folder, bootstrap)
 	# cmd = 'raxmlHPC-PTHREADS -T {} -f a -m GTRGAMMA -p 12345 -x 12345 -s {} -w {} -N {} -n nextstrain -k'\
 	# 		.format(threads, input_file, RAxML_folder, bootstrap)
+	print(cmd)
 	os.system(cmd)
 
 def create_augur_metadata():
@@ -724,7 +725,7 @@ def main():
 	# create_clean_sequences()
 	# analyze_nextstrain_metadata()
 	# align_clean_sequences(60)
-	# run_raxml_multithreaded(10, 60)
+	run_raxml_multithreaded(10, 60)
 	# create_augur_metadata()
 	# refine_best_tree_treetime()
 	# create_rooted_bootstrap_trees('covid_19/nextstrain/RAxML_nextstrain_06_12/')
@@ -743,7 +744,7 @@ def main():
 	# country_of_exposure_from_traits('covid_19/nextstrain/TreeTime_nextstrain_06_12/bootstrap_tree_0/')
 	# country_of_exposure_from_tnet_bootstrap(10)
 	# compare_country_of_exposure()
-	compare_country_of_exposure_treetime_bootstrap(10)
+	# compare_country_of_exposure_treetime_bootstrap(10)
 
 if __name__ == "__main__": main()
 # 
