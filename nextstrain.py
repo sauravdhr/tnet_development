@@ -263,18 +263,23 @@ def refine_bootstrap_trees_treetime(bootstrap):
 	for i in range(len(t)):
 		t[i].join()
 
-def infer_traits_best_tree_treetime():
+def infer_traits_treetime(folder):
 	data_dir = 'covid_19/nextstrain/'
 	metadata_tsv = data_dir + 'augur_metadata_06_12.tsv'
-	best_tree_folder = data_dir + 'TreeTime_nextstrain_06_12/best_tree/'
-	input_treetime = best_tree_folder + 'treetime.nwk'
-	output_traits_json = best_tree_folder + 'traits.json'
+	treetime_folder = data_dir + folder
+	input_treetime = treetime_folder + '/treetime.nwk'
+	output_traits_json = treetime_folder + '/traits.json'
 
 	cmd = 'augur traits --tree {} --metadata {} --output {} --columns country --confidence'\
 			.format(input_treetime, metadata_tsv, output_traits_json)
 
 	print(cmd)
 	os.system(cmd)
+
+def infer_traits_bootstrap(bootstrap):
+	for i in range(bootstrap):
+		bootstrap_folder = 'TreeTime_nextstrain_06_12/bootstrap_tree_' + str(i)
+		infer_traits_treetime(bootstrap_folder)
 
 def get_best_tree_dated_edges():
 	data_dir = 'covid_19/nextstrain/TreeTime_nextstrain_06_12/best_tree/'
@@ -585,8 +590,8 @@ def node_count_date(bootstrap):
 
 	print(count_dic)
 
-def country_of_exposure_from_traits():
-	data_dir = 'covid_19/nextstrain/TreeTime_nextstrain_06_12/best_tree/'
+def country_of_exposure_from_traits(data_dir):
+	# data_dir = 'covid_19/nextstrain/TreeTime_nextstrain_06_12/best_tree/'
 	trait_json = data_dir + 'traits.json'
 	trait_nodes = json.load(open(trait_json))['nodes']
 	treetime_tree = data_dir + 'treetime.nwk'
@@ -632,7 +637,7 @@ def country_of_exposure_from_tnet_bootstrap(bootstrap):
 
 def compare_country_of_exposure():
 	data_dir = 'covid_19/nextstrain/'
-	nextstrain_exposure = country_of_exposure_from_traits()
+	nextstrain_exposure = country_of_exposure_from_traits('covid_19/nextstrain/TreeTime_nextstrain_06_12/bootstrap_tree_0/')
 	tnet_exposure = country_of_exposure_from_tnet_bootstrap(10)
 	tsv_file = open(data_dir + 'nextstrain_metadata_06_12.tsv')
 	read_tsv = csv.reader(tsv_file, delimiter="\t")
@@ -664,16 +669,68 @@ def compare_country_of_exposure():
 	file.write('Nextstrain: {} out of {} and Ratio: {}\n'.format(nextstrain_count, len(strains), 100*nextstrain_count/len(strains)))
 	file.write('TNet: {} out of {} and Ratio: {}\n'.format(tnet_count, len(strains), 100*tnet_count/len(strains)))
 
+def compare_country_of_exposure_treetime_bootstrap(bootstrap):
+	data_dir = 'covid_19/nextstrain/'
+	tnet_exposure = country_of_exposure_from_tnet_bootstrap(10)
+	csv_file = open(data_dir + 'TreeTime_nextstrain_06_12/tnet_bootstrap_output/nextstrain.tnet.compare.csv')
+	true_exposure = {}
+	csv_file.readline()
+
+	for line in csv_file.readlines():
+		parts = line.strip().split(',')
+		if len(parts) > 2:
+			# print(parts[0], parts[1])
+			true_exposure[parts[0]] = parts[1]
+
+	print(len(true_exposure))
+
+	bootstrap_treetime = defaultdict(list)
+	nextstrain_bootstrap_count = [0 for _ in range(bootstrap)]
+
+	for i in range(bootstrap):
+		cur_exposure = country_of_exposure_from_traits('covid_19/nextstrain/TreeTime_nextstrain_06_12/bootstrap_tree_' + str(i) + '/')
+		for strain, country in cur_exposure.items():
+			bootstrap_treetime[strain].append(country)
+			if country == true_exposure[strain]:
+				nextstrain_bootstrap_count[i] += 1
+
+	print(nextstrain_bootstrap_count)
+	tnet_count, nextstrain_count = 0, 0
+
+	for strain, countries in bootstrap_treetime.items():
+		country_count = dict(Counter(countries))
+		max_country = max(country_count, key=country_count.get)
+		print(strain, country_count, max_country)
+		if max_country == true_exposure[strain]:
+			nextstrain_count += 1
+		if tnet_exposure[strain] == true_exposure[strain]:
+			tnet_count += 1
+
+	print(tnet_count/2123, nextstrain_count/2123)
+	result = data_dir + 'TreeTime_nextstrain_06_12/tnet_bootstrap_output/nextstrain_bootstrap.tnet.compare.csv'
+	f = open(result, 'w+')
+	f.write('strain,real,nextstrain_0,nextstrain_1,nextstrain_2,nextstrain_3,nextstrain_4,nextstrain_5,nextstrain_6,nextstrain_7,nextstrain_8,nextstrain_9,tnet\n')
+
+	for strain, countries in bootstrap_treetime.items():
+		f.write('{},{},{},{},{},{},{},{},{},{},{},{},{}\n'.format(strain, true_exposure[strain], countries[0], countries[1], countries[2], countries[3], countries[4],
+				countries[5], countries[6], countries[7], countries[8], countries[9], tnet_exposure[strain]))
+		
+	f.write(',,{},{},{},{},{},{},{},{},{},{},{}\n'.format(nextstrain_bootstrap_count[0],nextstrain_bootstrap_count[1],nextstrain_bootstrap_count[2],nextstrain_bootstrap_count[3],
+			nextstrain_bootstrap_count[4],nextstrain_bootstrap_count[5],nextstrain_bootstrap_count[6],nextstrain_bootstrap_count[7],nextstrain_bootstrap_count[8],
+			nextstrain_bootstrap_count[9],tnet_count))
+
+
 def main():
 	# create_clean_sequences()
 	# analyze_nextstrain_metadata()
-	align_clean_sequences(60)
+	# align_clean_sequences(60)
 	# run_raxml_multithreaded(10, 60)
 	# create_augur_metadata()
 	# refine_best_tree_treetime()
 	# create_rooted_bootstrap_trees('covid_19/nextstrain/RAxML_nextstrain_06_12/')
 	# refine_bootstrap_trees_treetime(10)
-	# infer_traits_best_tree_treetime()
+	# infer_traits_treetime('best_tree')
+	# infer_traits_bootstrap(10)
 	# get_best_tree_dated_edges()
 	# create_tnet_bootstrap_treetime(10)
 	# create_tnet_bootstrap_output(10)
@@ -683,9 +740,10 @@ def main():
 	# make_treetime_tree_binary('covid_19/nextstrain/TreeTime_nextstrain_06_12/bootstrap_tree_9/')
 	# phylo_rooting(9)
 	# node_count_date(10)
-	# country_of_exposure_from_traits()
+	# country_of_exposure_from_traits('covid_19/nextstrain/TreeTime_nextstrain_06_12/bootstrap_tree_0/')
 	# country_of_exposure_from_tnet_bootstrap(10)
 	# compare_country_of_exposure()
+	compare_country_of_exposure_treetime_bootstrap(10)
 
 if __name__ == "__main__": main()
 # 
