@@ -596,25 +596,11 @@ def check_and_clean():
 
 	for folder in folders:
 		print('Inside',folder)
-		check_folder = data_dir + folder + '/tnet_new_100_bootstrap_with_bias_min_coinfection_summary_directed'
+		check_folder = data_dir + folder + '/titus_best_tree'
 		if os.path.exists(check_folder):
-			# original = '/home/saurav/research/FAVITES_compare_TNet_v2/outputs/'+ folder +'/tnet_best_tree/bestTree.1.tnet_new'
-			# copy = 'outputs/'+ folder +'/tnet_best_tree/bestTree.1.tnet_new'
-			# if os.path.exists(original):
-			# 	shutil.copy(original, copy)
-			# count += 1
-			file_list = next(os.walk(check_folder))[2]
-			count += len(file_list)
-			# for file in file_list:
-			# 	if "tnet_new_with_min_bug_fixed" in file:
-			# 		check_file = check_folder + '/' + file
-			# 		print(check_file)
-			# 		os.remove(check_file)
-			# 	print(folder)
-			# 	# os.remove(check_file)
-			# 	shutil.rmtree(check_folder + '/tnet_new_10_bootstrap')
+			shutil.rmtree(check_folder)
 
-	print('Done',count, 'out of:', len(folders)*4)
+	print('Done',count, 'out of:', len(folders))
 
 def main():
 	# get_sequences_and_network()
