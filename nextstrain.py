@@ -969,6 +969,192 @@ def similatity_transmission_network_nextstrain_tnet():
 	output.write(',tnet_bias,tnet_random_sample\n')
 	output.write('nextstrain,{},{}\n'.format(sim_bias/len(tb_edges), sim_rs/len(trs_edges)))
 
+def top_spreaders_over_time_period(number):
+	data_dir = 'covid_19/nextstrain/TreeTime_nextstrain_06_12/tnet_bootstrap_output/'
+	f = open(data_dir + 'tnet_random_sample.100_times.10_bootstrap.dated_edges.groups.cutoff.csv')
+	# output = open(data_dir + 'tnet_random_sample.top_' + str(number) + '_spreader_over_time.csv', 'w+')
+	spreader = defaultdict(list)
+	header = f.readline()
+	print('CSV len', len(header.split(',')))
+	# output.write(header)
+
+	for line in f.readlines():
+		parts = line.strip().split(',')
+		sp = parts[0].split('->')[0]
+
+		if sp in spreader:
+			for i in range(1, len(parts)):
+				spreader[sp][i - 1] += int(parts[i])
+		else:
+			for i in range(1, len(parts)):
+				spreader[sp].append(int(parts[i]))
+
+		# print(sp, spreader[sp])
+
+	print(spreader)
+	# for sp, sc in spreader.items():
+	# 	output.write('{},{},{},{},{},{},{},{}\n'.format(sp, sc[0],sc[1],sc[2],sc[3],sc[4],sc[5],sc[6]))
+
+def top_spreaders_receivers_over_time(number):
+	data_dir = 'covid_19/nextstrain/TreeTime_usa_07_21/'
+	input_file = data_dir + 'tnet_bootstrap_output/tnet_bias.100_times.10_bootstrap.dated_edges.groups.csv'
+	output_file = data_dir + 'results/tnet_bias.top_' + str(number) + '_spreaders_receivers_over_time.csv'
+	f = open(input_file)
+
+	groups = f.readline().strip().split(',')[1:]
+	print(groups)
+	spreaders = [{} for _ in groups]
+	receivers = [{} for _ in groups]
+
+	for line in f.readlines():
+		parts = line.strip().split(',')
+		# print(parts)
+		sp = parts[0].split('->')[0]
+		rc = parts[0].split('->')[1]
+		# print(sp, rc)
+
+		for i in range(len(groups)):
+			if int(parts[i + 1]) > 0:
+				if sp in spreaders[i]:
+					spreaders[i][sp] += int(parts[i + 1])
+				else:
+					spreaders[i][sp] = int(parts[i + 1])
+
+				if rc in receivers[i]:
+					receivers[i][rc] += int(parts[i + 1])
+				else:
+					receivers[i][rc] = int(parts[i + 1])
+
+	# print(spreaders)
+	# print(receivers)
+
+	# sort the dicts
+	for i in range(len(groups)):
+		spreaders[i] = dict(sorted(spreaders[i].items(), key=operator.itemgetter(1), reverse=True))
+		receivers[i] = dict(sorted(receivers[i].items(), key=operator.itemgetter(1), reverse=True))
+
+	# keep only top 5 entries
+	for i in range(len(groups)):
+		spreaders[i] = dict(list(spreaders[i].items())[0: number])
+		receivers[i] = dict(list(receivers[i].items())[0: number])
+	
+	print(spreaders)
+	print(receivers)
+
+	output = open(output_file, 'w+')
+	output.write('Spreaders')
+
+	for i in range(number):
+		output.write(',Name,Count')
+
+	output.write('\n')
+	for i in range(len(groups)):
+		output.write('{}'.format(groups[i]))
+
+		for x, y in spreaders[i].items():
+			output.write(',{},{}'.format(x,y))
+		output.write('\n')
+
+	output.write('\n\n\nReceivers')
+
+	for i in range(number):
+		output.write(',Name,Count')
+
+	output.write('\n')
+	for i in range(len(groups)):
+		output.write('{}'.format(groups[i]))
+
+		for x, y in receivers[i].items():
+			output.write(',{},{}'.format(x,y))
+		output.write('\n')
+
+def name_specific_spreaders_receivers_over_time(name):
+	data_dir = 'covid_19/nextstrain/TreeTime_nextstrain_06_12/'
+	input_file = data_dir + 'tnet_bootstrap_output/tnet_bias.100_times.10_bootstrap.dated_edges.groups.csv'
+	output_file = data_dir + 'results/tnet_bias.' + name + '.spreaders_receivers_over_time.csv'
+	f = open(input_file)
+
+	groups = f.readline().strip().split(',')[1:]
+	print(groups)
+
+	spreading = [0 for _ in range(len(groups))]
+	receiving = [0 for _ in range(len(groups))]
+
+	for line in f.readlines():
+		parts = line.strip().split(',')
+		# print(parts)
+		sp = parts[0].split('->')[0]
+		rc = parts[0].split('->')[1]
+		# print(sp, rc)
+
+		if sp == name:
+			for i in range(len(groups)):
+				spreading[i] += int(parts[i + 1])
+
+		if rc == name:
+			for i in range(len(groups)):
+				receiving[i] += int(parts[i + 1])
+
+	print(spreading)
+	print(receiving)
+
+	output = open(output_file, 'w+')
+	output.write('TNet_bias')
+
+	for group in groups:
+		output.write(',{}'.format(group))
+
+	output.write('\nspreading')
+	for count in spreading:
+		output.write(',{}'.format(count))
+
+	output.write('\nreceiving')
+	for count in receiving:
+		output.write(',{}'.format(count))
+
+def group_spreaders_receivers_over_time():
+	data_dir = 'covid_19/nextstrain/TreeTime_usa_07_21/'
+	input_file = data_dir + 'tnet_bootstrap_output/tnet_bias.100_times.10_bootstrap.dated_edges.groups.csv'
+	output_file = data_dir + 'results/tnet_bias.group.spreaders_receivers_over_time.csv'
+	f = open(input_file)
+
+	# names = ['China', 'USA', 'France', 'Italy', 'Spain', 'Germany', 'UnitedKingdom', 'Switzerland']
+	names = ['NewYork', 'Wisconsin', 'California', 'Illinois', 'Massachusetts', 'Connecticut', 'Washington', 'Georgia']
+	groups = f.readline().strip().split(',')[1:]
+	print(groups)
+
+	spreaders = {name:[0 for _ in range(len(groups))] for name in names}
+	receivers = {name:[0 for _ in range(len(groups))] for name in names}
+
+	for line in f.readlines():
+		parts = line.strip().split(',')
+		# print(parts)
+		sp = parts[0].split('->')[0]
+		rc = parts[0].split('->')[1]
+		# print(sp, rc)
+
+		if sp in names:
+			for i in range(len(groups)):
+				spreaders[sp][i] += int(parts[i + 1])
+
+		if rc in names:
+			for i in range(len(groups)):
+				receivers[rc][i] += int(parts[i + 1])
+
+	print(spreaders)
+	print(receivers)
+
+	output = open(output_file, 'w+')
+	output.write('Spreaders,' + ','.join(groups) + '\n')
+
+	for x, y in spreaders.items():
+		output.write('{},{}\n'.format(x, str(y)[1:-1]))
+
+	output.write('\n\nReceivers,' + ','.join(groups) + '\n')
+
+	for x, y in receivers.items():
+		output.write('{},{}\n'.format(x, str(y)[1:-1]))
+
 def main():
 	# create_clean_sequences()
 	# analyze_nextstrain_metadata()
@@ -1002,7 +1188,11 @@ def main():
 	# check()
 	# analyze_agar_metadata('covid_19/nextstrain/augur_metadata_usa_07_21.tsv')
 	# spreader_over_time()
-	similatity_transmission_network_nextstrain_tnet()
+	# similatity_transmission_network_nextstrain_tnet()
+	# top_spreaders_over_time_period(5)
+	# top_spreaders_receivers_over_time(5)
+	# name_specific_spreaders_receivers_over_time('USA')
+	group_spreaders_receivers_over_time()
 
 if __name__ == "__main__": main()
 # 
