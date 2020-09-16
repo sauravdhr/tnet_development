@@ -997,8 +997,8 @@ def top_spreaders_over_time_period(number):
 
 def top_spreaders_receivers_over_time(number):
 	data_dir = 'covid_19/nextstrain/TreeTime_usa_07_21/'
-	input_file = data_dir + 'tnet_bootstrap_output/tnet_bias.100_times.10_bootstrap.dated_edges.groups.csv'
-	output_file = data_dir + 'results/tnet_bias.top_' + str(number) + '_spreaders_receivers_over_time.csv'
+	input_file = data_dir + 'tnet_bootstrap_output/tnet_random_sample.singular.dated_edges.groups.csv'
+	output_file = data_dir + 'results/tnet_random_sample.singular.top_' + str(number) + '_spreaders_receivers_over_time.csv'
 	f = open(input_file)
 
 	groups = f.readline().strip().split(',')[1:]
@@ -1014,16 +1014,16 @@ def top_spreaders_receivers_over_time(number):
 		# print(sp, rc)
 
 		for i in range(len(groups)):
-			if int(parts[i + 1]) > 0:
+			if float(parts[i + 1]) > 0:
 				if sp in spreaders[i]:
-					spreaders[i][sp] += int(parts[i + 1])
+					spreaders[i][sp] += float(parts[i + 1])
 				else:
-					spreaders[i][sp] = int(parts[i + 1])
+					spreaders[i][sp] = float(parts[i + 1])
 
 				if rc in receivers[i]:
-					receivers[i][rc] += int(parts[i + 1])
+					receivers[i][rc] += float(parts[i + 1])
 				else:
-					receivers[i][rc] = int(parts[i + 1])
+					receivers[i][rc] = float(parts[i + 1])
 
 	# print(spreaders)
 	# print(receivers)
@@ -1042,43 +1042,33 @@ def top_spreaders_receivers_over_time(number):
 	print(receivers)
 
 	output = open(output_file, 'w+')
-	output.write('Spreaders')
+	output.write('Spreaders,Name,Count\n')
 
-	for i in range(number):
-		output.write(',Name,Count')
-
-	output.write('\n')
 	for i in range(len(groups)):
-		output.write('{}'.format(groups[i]))
+		output.write(groups[i])
 
 		for x, y in spreaders[i].items():
-			output.write(',{},{}'.format(x,y))
-		output.write('\n')
+			output.write(',{},{:.2f}\n'.format(x, y))
 
-	output.write('\n\n\nReceivers')
+	output.write('\n\nReceivers,Name,Count\n')
 
-	for i in range(number):
-		output.write(',Name,Count')
-
-	output.write('\n')
 	for i in range(len(groups)):
-		output.write('{}'.format(groups[i]))
+		output.write(groups[i])
 
 		for x, y in receivers[i].items():
-			output.write(',{},{}'.format(x,y))
-		output.write('\n')
+			output.write(',{},{:.2f}\n'.format(x, y))
 
-def name_specific_spreaders_receivers_over_time(name):
-	data_dir = 'covid_19/nextstrain/TreeTime_nextstrain_06_12/'
-	input_file = data_dir + 'tnet_bootstrap_output/tnet_bias.100_times.10_bootstrap.dated_edges.groups.csv'
-	output_file = data_dir + 'results/tnet_bias.' + name + '.spreaders_receivers_over_time.csv'
+def name_specific_top_spreaders_receivers_over_time(name, number):
+	data_dir = 'covid_19/nextstrain/TreeTime_usa_07_21/'
+	input_file = data_dir + 'tnet_bootstrap_output/treetime.dated_edges.groups.csv'
+	output_file = data_dir + 'results/treetime.' + name + '.spreaders_receivers_over_time.csv'
 	f = open(input_file)
 
 	groups = f.readline().strip().split(',')[1:]
 	print(groups)
 
-	spreading = [0 for _ in range(len(groups))]
-	receiving = [0 for _ in range(len(groups))]
+	spreading = [{} for _ in groups]
+	receiving = [{} for _ in groups]
 
 	for line in f.readlines():
 		parts = line.strip().split(',')
@@ -1087,44 +1077,90 @@ def name_specific_spreaders_receivers_over_time(name):
 		rc = parts[0].split('->')[1]
 		# print(sp, rc)
 
-		if sp == name:
-			for i in range(len(groups)):
-				spreading[i] += int(parts[i + 1])
+		for i in range(len(groups)):
+			if float(parts[i + 1]) > 0.0 and sp == name:
+				if rc in receiving[i]:
+					receiving[i][rc] += float(parts[i + 1])
+				else:
+					receiving[i][rc] = float(parts[i + 1])
+			elif float(parts[i + 1]) > 0.0 and rc == name:
+				if sp in spreading[i]:
+					spreading[i][sp] += float(parts[i + 1])
+				else:
+					spreading[i][sp] = float(parts[i + 1])
 
-		if rc == name:
-			for i in range(len(groups)):
-				receiving[i] += int(parts[i + 1])
+	# print(spreading)
+	# print(receiving)
+
+	# sort the dicts
+	for i in range(len(groups)):
+		spreading[i] = dict(sorted(spreading[i].items(), key=operator.itemgetter(1), reverse=True))
+		receiving[i] = dict(sorted(receiving[i].items(), key=operator.itemgetter(1), reverse=True))
+
+	# keep only top 5 entries
+	for i in range(len(groups)):
+		spreading[i] = dict(list(spreading[i].items())[0: number])
+		receiving[i] = dict(list(receiving[i].items())[0: number])
 
 	print(spreading)
 	print(receiving)
 
 	output = open(output_file, 'w+')
-	output.write('TNet_bias')
+	output.write(name + ' received,Name,Count\n')
 
-	for group in groups:
-		output.write(',{}'.format(group))
+	for i in range(len(groups)):
+		output.write(groups[i])
 
-	output.write('\nspreading')
-	for count in spreading:
-		output.write(',{}'.format(count))
+		for x, y in spreading[i].items():
+			output.write(',{},{:.2f}\n'.format(x, y))
 
-	output.write('\nreceiving')
-	for count in receiving:
-		output.write(',{}'.format(count))
+	output.write('\n\n' + name + ' spreaded,Name,Count\n')
 
-def group_spreaders_receivers_over_time():
-	data_dir = 'covid_19/nextstrain/TreeTime_usa_07_21/'
-	input_file = data_dir + 'tnet_bootstrap_output/tnet_bias.100_times.10_bootstrap.dated_edges.groups.csv'
-	output_file = data_dir + 'results/tnet_bias.group.spreaders_receivers_over_time.csv'
+	for i in range(len(groups)):
+		output.write(groups[i])
+
+		for x, y in receiving[i].items():
+			output.write(',{},{:.2f}\n'.format(x, y))
+
+def get_top_spreader_list(data_dir):
+	input_file = data_dir + 'tnet_bootstrap_output/treetime.dated_edges'
+	output_list = []
 	f = open(input_file)
 
-	# names = ['China', 'USA', 'France', 'Italy', 'Spain', 'Germany', 'UnitedKingdom', 'Switzerland']
-	names = ['NewYork', 'Wisconsin', 'California', 'Illinois', 'Massachusetts', 'Connecticut', 'Washington', 'Georgia']
+	spreaders = []
+	receivers = []
+
+	for line in f.readlines():
+		parts = line.strip().split(',')
+		# print(parts)
+		sp = parts[0].split('->')[0]
+		rc = parts[0].split('->')[1]
+		# print(sp, rc)
+		spreaders.append(sp)
+		receivers.append(rc)
+
+	spreaders = Counter(spreaders)
+	receivers = Counter(receivers)
+	spreaders = dict(sorted(spreaders.items(), key=operator.itemgetter(1), reverse=True))
+	receivers = dict(sorted(receivers.items(), key=operator.itemgetter(1), reverse=True))
+	# print(spreaders)
+	print(receivers)
+
+def group_spreaders_receivers_over_time():
+	data_dir = 'covid_19/nextstrain/TreeTime_nextstrain_06_12/'
+	input_file = data_dir + 'tnet_bootstrap_output/treetime.singular.dated_edges.groups.csv'
+	output_file = data_dir + 'results/treetime.singular.group.spreaders_receivers_over_time.csv'
+	f = open(input_file)
+
+	# s_names = ['China', 'France', 'Italy', 'Belgium', 'Switzerland', 'Spain', 'USA', 'UnitedKingdom']
+	# r_names = ['Australia', 'USA', 'UnitedKingdom', 'Switzerland', 'Taiwan', 'India', 'Germany', 'Belgium']
+	s_names = ['California', 'NewYork', 'Virginia', 'Pennsylvania', 'Washington', 'Michigan', 'Illinois', 'Florida']
+	r_names = ['Maryland', 'Florida', 'NewYork', 'Utah', 'Virginia', 'Minnesota', 'Arizona', 'Connecticut']
 	groups = f.readline().strip().split(',')[1:]
 	print(groups)
 
-	spreaders = {name:[0 for _ in range(len(groups))] for name in names}
-	receivers = {name:[0 for _ in range(len(groups))] for name in names}
+	spreaders = {name:[0 for _ in range(len(groups))] for name in s_names}
+	receivers = {name:[0 for _ in range(len(groups))] for name in r_names}
 
 	for line in f.readlines():
 		parts = line.strip().split(',')
@@ -1133,13 +1169,13 @@ def group_spreaders_receivers_over_time():
 		rc = parts[0].split('->')[1]
 		# print(sp, rc)
 
-		if sp in names:
+		if sp in s_names:
 			for i in range(len(groups)):
-				spreaders[sp][i] += int(parts[i + 1])
+				spreaders[sp][i] += float(parts[i + 1])
 
-		if rc in names:
+		if rc in r_names:
 			for i in range(len(groups)):
-				receivers[rc][i] += int(parts[i + 1])
+				receivers[rc][i] += float(parts[i + 1])
 
 	print(spreaders)
 	print(receivers)
@@ -1148,12 +1184,128 @@ def group_spreaders_receivers_over_time():
 	output.write('Spreaders,' + ','.join(groups) + '\n')
 
 	for x, y in spreaders.items():
-		output.write('{},{}\n'.format(x, str(y)[1:-1]))
+		output.write(x)
+		for count in y:
+			output.write(',{:.2f}'.format(count))
+		output.write('\n')
 
 	output.write('\n\nReceivers,' + ','.join(groups) + '\n')
 
 	for x, y in receivers.items():
-		output.write('{},{}\n'.format(x, str(y)[1:-1]))
+		output.write(x)
+		for count in y:
+			output.write(',{:.2f}'.format(count))
+		output.write('\n')
+
+def create_dated_edges_groups_from_json(bootstrap):
+	data_dir = 'covid_19/nextstrain/TreeTime_nextstrain_06_12/'
+
+	for i in range(bootstrap):
+		json_file = data_dir + 'bootstrap_tree_' + str(i) + '/tnet_bias.100_times.new.json'
+		edge_date = json.load(open(json_file))["Dated edges"]
+		output_file = data_dir + 'bootstrap_tree_' + str(i) + '/tnet_bias.100_times.dated_edges'
+		f = open(output_file, "w")
+
+		for edge, date in edge_date:
+			# print(edge, date)
+			f.write('{},{}\n'.format(edge, date))
+
+		f.close()
+		group_dated_edges(output_file)
+
+def create_avg_dated_edges_over_time(samples, bootstraps):
+	data_dir = 'covid_19/nextstrain/TreeTime_usa_07_21/'
+	output_file = data_dir + 'tnet_bootstrap_output/tnet_bias.avg.dated_edges.groups.csv'
+	table = {}
+
+	for i in range(bootstraps):
+		input_file = data_dir + 'bootstrap_tree_' + str(i) + '/tnet_bias.100_times.dated_edges.groups.csv'
+		f = open(input_file)
+		groups = f.readline().strip().split(',')[1:]
+		# print(groups)
+
+		for line in f.readlines():
+			parts = line.strip().split(',')
+			# print(parts)
+
+			if parts[0] in table:
+				for j in range(len(groups)):
+					table[parts[0]][j] += int(parts[j + 1])/samples
+			else:
+				table[parts[0]] = []
+				for j in range(len(groups)):
+					table[parts[0]].append(int(parts[j + 1])/samples)
+
+	f.close()
+	print(table)
+	output = open(output_file, 'w+')
+	output.write('edges,' + ','.join(groups) + '\n')
+	for edge, counts in table.items():
+		output.write(edge)
+		for count in counts:
+			output.write(',{:.2f}'.format(count/bootstraps))
+		output.write('\n')
+
+def create_singular_dated_edges_over_time(samples, bootstraps):
+	data_dir = 'covid_19/nextstrain/TreeTime_usa_07_21/'
+	output_file = data_dir + 'tnet_bootstrap_output/tnet_bias.singular.dated_edges.groups.csv'
+	table = {}
+
+	for i in range(bootstraps):
+		input_file = data_dir + 'bootstrap_tree_' + str(i) + '/tnet_bias.100_times.dated_edges.groups.csv'
+		f = open(input_file)
+		groups = f.readline().strip().split(',')[1:]
+		# print(groups)
+
+		for line in f.readlines():
+			parts = line.strip().split(',')
+			# print(parts)
+
+			if parts[0] in table:
+				for j in range(len(groups)):
+					if int(parts[j + 1]) >= samples//2:
+						table[parts[0]][j] += 1
+			else:
+				table[parts[0]] = []
+				for j in range(len(groups)):
+					if int(parts[j + 1]) >= samples//2:
+						table[parts[0]].append(1)
+					else:
+						table[parts[0]].append(0)
+
+	f.close()
+	print(table)
+	output = open(output_file, 'w+')
+	output.write('edges,' + ','.join(groups) + '\n')
+	for edge, counts in table.items():
+		output.write(edge)
+		for count in counts:
+			if count >= bootstraps//2:
+				output.write(',1')
+			else:
+				output.write(',0')
+
+		output.write('\n')
+
+def create_treetime_singular_dated_edges():
+	data_dir = 'covid_19/nextstrain/TreeTime_usa_07_21/'
+	input_file = data_dir + 'tnet_bootstrap_output/treetime.dated_edges.groups.csv'
+	output_file = data_dir + 'tnet_bootstrap_output/treetime.singular.dated_edges.groups.csv'
+	f = open(input_file)
+	output = open(output_file, 'w+')
+	output.write(f.readline())
+
+	for line in f.readlines():
+		parts = line.strip().split(',')
+		output.write(parts[0])
+
+		for i in range(1, len(parts)):
+			if int(parts[i]) == 0:
+				output.write(',0')
+			else:
+				output.write(',1')
+
+		output.write('\n')
 
 def main():
 	# create_clean_sequences()
@@ -1170,7 +1322,7 @@ def main():
 	# create_tnet_bootstrap_output(10)
 	# create_tnet_bootstrap_dated_edges_summary(10)
 	# create_tnet_bootstrap_dated_edges_summary_from_json(10)
-	# group_dated_edges('covid_19/nextstrain/TreeTime_nextstrain_06_12/tnet_bootstrap_output/tnet_random_sample.100_times.10_bootstrap.dated_edges')
+	# group_dated_edges('covid_19/nextstrain/TreeTime_nextstrain_06_12/bootstrap_tree_9/tnet_bias.100_times.dated_edges')
 	# create_tnet_bootstrap_transmission_edges_summary(50)
 	# analyze_nextstrain_output()
 	# reroot_bootstrap_trees(10)
@@ -1191,8 +1343,14 @@ def main():
 	# similatity_transmission_network_nextstrain_tnet()
 	# top_spreaders_over_time_period(5)
 	# top_spreaders_receivers_over_time(5)
-	# name_specific_spreaders_receivers_over_time('USA')
+	# name_specific_top_spreaders_receivers_over_time('NewYork', 5)
 	group_spreaders_receivers_over_time()
+	# get_top_spreader_list('covid_19/nextstrain/TreeTime_nextstrain_06_12/')
+	# create_avg_dated_edges_over_time(100, 10)
+	# create_singular_dated_edges_over_time(100, 10)
+	# create_treetime_singular_dated_edges()
+	# create_dated_edges_groups_from_json(10)
+
 
 if __name__ == "__main__": main()
 # 
