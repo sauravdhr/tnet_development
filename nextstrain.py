@@ -1048,8 +1048,8 @@ def top_spreaders_receivers_over_time(number):
 
 def name_specific_top_spreaders_receivers_over_time(name, number):
 	data_dir = 'covid_19/nextstrain/TreeTime_usa_07_21/'
-	input_file = data_dir + 'tnet_bootstrap_output/treetime.dated_edges.groups.csv'
-	output_file = data_dir + 'results/treetime.' + name + '.spreaders_receivers_over_time.csv'
+	input_file = data_dir + 'tnet_bootstrap_output/treetime.singular.dated_edges.groups.csv'
+	output_file = data_dir + 'results/treetime.' + name + '.singular.spreaders_receivers_over_time.csv'
 	f = open(input_file)
 
 	groups = f.readline().strip().split(',')[1:]
@@ -1140,10 +1140,10 @@ def group_spreaders_receivers_over_time():
 	output_file = data_dir + 'results/treetime.singular.group.spreaders_receivers_over_time.csv'
 	f = open(input_file)
 
-	# s_names = ['China', 'France', 'Italy', 'Belgium', 'Switzerland', 'Spain', 'USA', 'UnitedKingdom']
-	# r_names = ['Australia', 'USA', 'UnitedKingdom', 'Switzerland', 'Taiwan', 'India', 'Germany', 'Belgium']
-	s_names = ['California', 'NewYork', 'Virginia', 'Pennsylvania', 'Washington', 'Michigan', 'Illinois', 'Florida']
-	r_names = ['Maryland', 'Florida', 'NewYork', 'Utah', 'Virginia', 'Minnesota', 'Arizona', 'Connecticut']
+	s_names = ['China', 'France', 'Italy', 'Belgium', 'Switzerland', 'Spain', 'USA', 'UnitedKingdom']
+	r_names = ['Australia', 'USA', 'UnitedKingdom', 'Switzerland', 'Taiwan', 'India', 'Germany', 'Belgium']
+	# s_names = ['California', 'NewYork', 'Virginia', 'Pennsylvania', 'Washington', 'Michigan', 'Illinois', 'Florida']
+	# r_names = ['Maryland', 'Florida', 'NewYork', 'Utah', 'Virginia', 'Minnesota', 'Arizona', 'Connecticut']
 	groups = f.readline().strip().split(',')[1:]
 	print(groups)
 
@@ -1325,13 +1325,13 @@ def main():
 	# create_treetime_sharptni_input('covid_19/nextstrain/TreeTime_nextstrain_06_12/bootstrap_tree_0/')
 	# create_sample_sankoff_sharptni_output('covid_19/nextstrain/TreeTime_nextstrain_06_12/bootstrap_tree_0/', 10)
 	# create_bootstrap_titus_input(10)
-	check()
+	# check()
 	# analyze_agar_metadata('covid_19/nextstrain/augur_metadata_usa_07_21.tsv')
 	# spreader_over_time()
 	# similatity_transmission_network_nextstrain_tnet()
 	# top_spreaders_over_time_period(5)
 	# top_spreaders_receivers_over_time(5)
-	# name_specific_top_spreaders_receivers_over_time('NewYork', 5)
+	name_specific_top_spreaders_receivers_over_time('NewYork', 5)
 	# group_spreaders_receivers_over_time()
 	# get_top_spreader_list('covid_19/nextstrain/TreeTime_nextstrain_06_12/')
 	# create_avg_dated_edges_over_time(100, 10)
