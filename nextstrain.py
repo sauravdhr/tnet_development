@@ -850,29 +850,17 @@ def create_bootstrap_titus_input(bootstrap):
 		create_titus_naive_sample_exposure(bootstrap_dir)
 
 def check():
-	compare = 'covid_19/nextstrain/TreeTime_nextstrain_06_12/tnet_bootstrap_output/nextstrain.tnet_bias.compare.csv'
-	augur = 'covid_19/nextstrain/augur_metadata_06_12.tsv'
-	final_metadata = 'covid_19/nextstrain/metadata_06_12.tsv'
-	f = open(compare)
-	real = {}
-	f.readline()
+	data_dir = 'covid_19/nextstrain/TreeTime_nextstrain_06_12/'
 
-	for line in f.readlines():
-		parts = line.split(',')
-		if len(parts) == 4:
-			# print(parts)
-			real[parts[0]] = parts[1]
+	for i in range(10):
+		check_folder = data_dir + 'bootstrap_tree_' + str(i) + '/'
+		files = next(os.walk(check_folder))[2]
+		print(files)
 
-	# print(real)
-	f = open(augur)
-	out = open(final_metadata, 'w+')
-	out.write('strain\tdate\tcountry\tcountry_exposure\n')
-	f.readline()
-
-	for line in f.readlines():
-		parts = line.strip().split('\t')
-		print(parts)
-		out.write('{}\t{}\t{}\t{}\n'.format(parts[0],parts[1],parts[2],real[parts[0]]))
+		for file in files:
+			if file.startswith('titus'):
+				check_file = check_folder + file
+				os.remove(check_file)
 
 def create_tnet_bootstrap_transmission_edges_summary(threshold):
 	data_dir = 'covid_19/nextstrain/TreeTime_usa_07_21/'
@@ -1337,14 +1325,14 @@ def main():
 	# create_treetime_sharptni_input('covid_19/nextstrain/TreeTime_nextstrain_06_12/bootstrap_tree_0/')
 	# create_sample_sankoff_sharptni_output('covid_19/nextstrain/TreeTime_nextstrain_06_12/bootstrap_tree_0/', 10)
 	# create_bootstrap_titus_input(10)
-	# check()
+	check()
 	# analyze_agar_metadata('covid_19/nextstrain/augur_metadata_usa_07_21.tsv')
 	# spreader_over_time()
 	# similatity_transmission_network_nextstrain_tnet()
 	# top_spreaders_over_time_period(5)
 	# top_spreaders_receivers_over_time(5)
 	# name_specific_top_spreaders_receivers_over_time('NewYork', 5)
-	group_spreaders_receivers_over_time()
+	# group_spreaders_receivers_over_time()
 	# get_top_spreader_list('covid_19/nextstrain/TreeTime_nextstrain_06_12/')
 	# create_avg_dated_edges_over_time(100, 10)
 	# create_singular_dated_edges_over_time(100, 10)
